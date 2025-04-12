@@ -9,7 +9,319 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      project_labor: {
+        Row: {
+          carpenters: number
+          electricians: number
+          helpers: number
+          id: string
+          masons: number
+          painters: number
+          plumbers: number
+          project_id: string
+          supervisors: number
+        }
+        Insert: {
+          carpenters?: number
+          electricians?: number
+          helpers?: number
+          id?: string
+          masons?: number
+          painters?: number
+          plumbers?: number
+          project_id: string
+          supervisors?: number
+        }
+        Update: {
+          carpenters?: number
+          electricians?: number
+          helpers?: number
+          id?: string
+          masons?: number
+          painters?: number
+          plumbers?: number
+          project_id?: string
+          supervisors?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_labor_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_materials: {
+        Row: {
+          aggregate: number
+          bricks: number
+          cement: number
+          doors: number
+          electrical: number
+          fixtures: number
+          flooring: number
+          glasswork: number
+          id: string
+          miscellaneous: number
+          paint: number
+          plumbing: number
+          project_id: string
+          roofing: number
+          sand: number
+          steel: number
+          tiles_marble: number
+          windows: number
+          wood: number
+        }
+        Insert: {
+          aggregate?: number
+          bricks?: number
+          cement?: number
+          doors?: number
+          electrical?: number
+          fixtures?: number
+          flooring?: number
+          glasswork?: number
+          id?: string
+          miscellaneous?: number
+          paint?: number
+          plumbing?: number
+          project_id: string
+          roofing?: number
+          sand?: number
+          steel?: number
+          tiles_marble?: number
+          windows?: number
+          wood?: number
+        }
+        Update: {
+          aggregate?: number
+          bricks?: number
+          cement?: number
+          doors?: number
+          electrical?: number
+          fixtures?: number
+          flooring?: number
+          glasswork?: number
+          id?: string
+          miscellaneous?: number
+          paint?: number
+          plumbing?: number
+          project_id?: string
+          roofing?: number
+          sand?: number
+          steel?: number
+          tiles_marble?: number
+          windows?: number
+          wood?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_optimizations: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          implementation_complexity: string
+          potential_savings: number
+          project_id: string
+          quality_impact: string
+          time_impact: string
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          implementation_complexity: string
+          potential_savings: number
+          project_id: string
+          quality_impact: string
+          time_impact: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          implementation_complexity?: string
+          potential_savings?: number
+          project_id?: string
+          quality_impact?: string
+          time_impact?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_optimizations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_overhead: {
+        Row: {
+          contingency: number
+          design: number
+          equipment: number
+          id: string
+          insurance: number
+          permits: number
+          project_id: string
+          site_preparation: number
+          transportation: number
+          utilities: number
+        }
+        Insert: {
+          contingency?: number
+          design?: number
+          equipment?: number
+          id?: string
+          insurance?: number
+          permits?: number
+          project_id: string
+          site_preparation?: number
+          transportation?: number
+          utilities?: number
+        }
+        Update: {
+          contingency?: number
+          design?: number
+          equipment?: number
+          id?: string
+          insurance?: number
+          permits?: number
+          project_id?: string
+          site_preparation?: number
+          transportation?: number
+          utilities?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_overhead_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_predictions: {
+        Row: {
+          confidence_level: string
+          created_at: string
+          factors: string[] | null
+          id: string
+          predicted_total: number
+          project_id: string
+          reasoning: string | null
+        }
+        Insert: {
+          confidence_level: string
+          created_at?: string
+          factors?: string[] | null
+          id?: string
+          predicted_total: number
+          project_id: string
+          reasoning?: string | null
+        }
+        Update: {
+          confidence_level?: string
+          created_at?: string
+          factors?: string[] | null
+          id?: string
+          predicted_total?: number
+          project_id?: string
+          reasoning?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_predictions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          area: number
+          construction_type: string | null
+          created_at: string
+          currency: string | null
+          floors: number
+          id: string
+          location: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area: number
+          construction_type?: string | null
+          created_at?: string
+          currency?: string | null
+          floors?: number
+          id?: string
+          location?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area?: number
+          construction_type?: string | null
+          created_at?: string
+          currency?: string | null
+          floors?: number
+          id?: string
+          location?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
