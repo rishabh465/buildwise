@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useEstimator } from '@/contexts/EstimatorContext';
@@ -28,10 +28,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Checkbox
+} from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
+import { 
+  sandPrices, 
+  aggregatePrices, 
+  cementPrices, 
+  steelPrices, 
+  brickPrices, 
+  woodPrices, 
+  paintPrices, 
+  electricalFixturePrices, 
+  plumbingFixturePrices, 
+  fixturePrices, 
+  windowPrices, 
+  doorPrices, 
+  roofingPrices, 
+  flooringPrices, 
+  glassPrices, 
+  tilesPrices, 
+  equipmentRates,
+  permitPrices,
+  designPrices,
+  insurancePrices,
+  utilitiesPrices,
+  sitePreparationPrices
+} from '@/lib/pricingData';
 
 const Estimate = () => {
   const navigate = useNavigate();
+  const { projectId } = useParams();
   const { toast } = useToast();
   const {
     state,
@@ -40,9 +68,20 @@ const Estimate = () => {
     updateLabor,
     updateOverhead,
     calculateCosts,
+    loadProject,
+    currentProjectId
   } = useEstimator();
   
   const [currentTab, setCurrentTab] = useState('project');
+  const [isLoading, setIsLoading] = useState(!!projectId);
+
+  // Load project data if projectId is provided
+  useEffect(() => {
+    if (projectId && projectId !== currentProjectId) {
+      setIsLoading(true);
+      loadProject(projectId).finally(() => setIsLoading(false));
+    }
+  }, [projectId, currentProjectId, loadProject]);
 
   const handleCalculate = () => {
     // Validate inputs
@@ -79,33 +118,28 @@ const Estimate = () => {
     // Navigate to dashboard
     navigate('/dashboard');
   };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    category: 'materials' | 'labor' | 'overhead',
-    field: string
-  ) => {
-    const value = parseFloat(e.target.value) || 0;
-    
-    switch (category) {
-      case 'materials':
-        updateMaterials({ [field]: value } as any);
-        break;
-      case 'labor':
-        updateLabor({ [field]: value } as any);
-        break;
-      case 'overhead':
-        updateOverhead({ [field]: value } as any);
-        break;
-    }
-  };
-
+  
   const constructionTypes = [
     { value: 'residential', label: 'Residential Building' },
     { value: 'commercial', label: 'Commercial Building' },
     { value: 'industrial', label: 'Industrial Building' },
     { value: 'infrastructure', label: 'Infrastructure Project' },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg">Loading project data...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -136,6 +170,7 @@ const Estimate = () => {
                   <TabsTrigger value="overhead">Overhead</TabsTrigger>
                 </TabsList>
                 
+                {/* PROJECT DETAILS TAB */}
                 <TabsContent value="project" className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -217,138 +252,287 @@ const Estimate = () => {
                   </div>
                 </TabsContent>
                 
+                {/* MATERIALS TAB */}
                 <TabsContent value="materials" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="cement">Cement (₹)</Label>
-                      <Input 
-                        id="cement"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.cement || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'cement')}
-                      />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* CEMENT */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Cement</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="cement-type">Type</Label>
+                          <Select 
+                            value={state.materials.cementType}
+                            onValueChange={(value) => updateMaterials({ cementType: value })}
+                          >
+                            <SelectTrigger id="cement-type">
+                              <SelectValue placeholder="Select cement type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(cementPrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/bag)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="cement-amount">Quantity (bags)</Label>
+                          <Input 
+                            id="cement-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.cementAmount || ''}
+                            onChange={(e) => updateMaterials({ cementAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="sand">Sand (₹)</Label>
-                      <Input 
-                        id="sand"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.sand || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'sand')}
-                      />
+                    {/* SAND */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Sand</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="sand-type">Type</Label>
+                          <Select 
+                            value={state.materials.sandType}
+                            onValueChange={(value) => updateMaterials({ sandType: value })}
+                          >
+                            <SelectTrigger id="sand-type">
+                              <SelectValue placeholder="Select sand type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(sandPrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/m³)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sand-amount">Quantity (m³)</Label>
+                          <Input 
+                            id="sand-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.sandAmount || ''}
+                            onChange={(e) => updateMaterials({ sandAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="aggregate">Aggregate (₹)</Label>
-                      <Input 
-                        id="aggregate"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.aggregate || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'aggregate')}
-                      />
+                    {/* AGGREGATE */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Aggregate</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="aggregate-type">Type</Label>
+                          <Select 
+                            value={state.materials.aggregateType}
+                            onValueChange={(value) => updateMaterials({ aggregateType: value })}
+                          >
+                            <SelectTrigger id="aggregate-type">
+                              <SelectValue placeholder="Select aggregate type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(aggregatePrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/m³)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="aggregate-amount">Quantity (m³)</Label>
+                          <Input 
+                            id="aggregate-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.aggregateAmount || ''}
+                            onChange={(e) => updateMaterials({ aggregateAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="steel">Steel (₹)</Label>
-                      <Input 
-                        id="steel"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.steel || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'steel')}
-                      />
+                    {/* STEEL */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Steel</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="steel-type">Type</Label>
+                          <Select 
+                            value={state.materials.steelType}
+                            onValueChange={(value) => updateMaterials({ steelType: value })}
+                          >
+                            <SelectTrigger id="steel-type">
+                              <SelectValue placeholder="Select steel type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(steelPrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/kg)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="steel-amount">Quantity (kg)</Label>
+                          <Input 
+                            id="steel-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.steelAmount || ''}
+                            onChange={(e) => updateMaterials({ steelAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="bricks">Bricks (₹)</Label>
-                      <Input 
-                        id="bricks"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.bricks || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'bricks')}
-                      />
+                    {/* BRICKS */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Bricks</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="brick-type">Type</Label>
+                          <Select 
+                            value={state.materials.brickType}
+                            onValueChange={(value) => updateMaterials({ brickType: value })}
+                          >
+                            <SelectTrigger id="brick-type">
+                              <SelectValue placeholder="Select brick type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(brickPrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/1000)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="brick-amount">Quantity (pieces)</Label>
+                          <Input 
+                            id="brick-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.brickAmount || ''}
+                            onChange={(e) => updateMaterials({ brickAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="wood">Wood (₹)</Label>
-                      <Input 
-                        id="wood"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.wood || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'wood')}
-                      />
+                    {/* WOOD */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Wood</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="wood-type">Type</Label>
+                          <Select 
+                            value={state.materials.woodType}
+                            onValueChange={(value) => updateMaterials({ woodType: value })}
+                          >
+                            <SelectTrigger id="wood-type">
+                              <SelectValue placeholder="Select wood type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(woodPrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/cu.ft.)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="wood-amount">Quantity (cu.ft.)</Label>
+                          <Input 
+                            id="wood-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.woodAmount || ''}
+                            onChange={(e) => updateMaterials({ woodAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="paint">Paint (₹)</Label>
-                      <Input 
-                        id="paint"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.paint || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'paint')}
-                      />
+                    {/* DOORS */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Doors</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="door-type">Type</Label>
+                          <Select 
+                            value={state.materials.doorType}
+                            onValueChange={(value) => updateMaterials({ doorType: value })}
+                          >
+                            <SelectTrigger id="door-type">
+                              <SelectValue placeholder="Select door type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(doorPrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/door)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="door-amount">Quantity (pieces)</Label>
+                          <Input 
+                            id="door-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.doorAmount || ''}
+                            onChange={(e) => updateMaterials({ doorAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="electrical">Electrical (₹)</Label>
-                      <Input 
-                        id="electrical"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.electrical || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'electrical')}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="plumbing">Plumbing (₹)</Label>
-                      <Input 
-                        id="plumbing"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.plumbing || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'plumbing')}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="fixtures">Fixtures (₹)</Label>
-                      <Input 
-                        id="fixtures"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.fixtures || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'fixtures')}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="windows">Windows (₹)</Label>
-                      <Input 
-                        id="windows"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.windows || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'windows')}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="doors">Doors (₹)</Label>
-                      <Input 
-                        id="doors"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.materials.doors || ''}
-                        onChange={(e) => handleInputChange(e, 'materials', 'doors')}
-                      />
+                    {/* WINDOWS */}
+                    <div className="space-y-2 border p-4 rounded-md">
+                      <Label className="font-medium">Windows</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="window-type">Type</Label>
+                          <Select 
+                            value={state.materials.windowType}
+                            onValueChange={(value) => updateMaterials({ windowType: value })}
+                          >
+                            <SelectTrigger id="window-type">
+                              <SelectValue placeholder="Select window type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(windowPrices).map(([type, price]) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/-/g, ' ').toUpperCase()} (₹{price}/window)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="window-amount">Quantity (pieces)</Label>
+                          <Input 
+                            id="window-amount"
+                            type="number"
+                            placeholder="Enter quantity"
+                            value={state.materials.windowAmount || ''}
+                            onChange={(e) => updateMaterials({ windowAmount: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
@@ -362,82 +546,87 @@ const Estimate = () => {
                   </div>
                 </TabsContent>
                 
+                {/* LABOR TAB */}
                 <TabsContent value="labor" className="space-y-6">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Enter the number of workers needed for each category. Costs will be calculated based on standard daily rates.
+                  </p>
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="masons">Masons (₹)</Label>
+                      <Label htmlFor="masons">Masons (₹800/day)</Label>
                       <Input 
                         id="masons"
                         type="number"
-                        placeholder="Enter cost"
+                        placeholder="Enter number of workers"
                         value={state.labor.masons || ''}
-                        onChange={(e) => handleInputChange(e, 'labor', 'masons')}
+                        onChange={(e) => updateLabor({ masons: parseInt(e.target.value) || 0 })}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="carpenters">Carpenters (₹)</Label>
+                      <Label htmlFor="carpenters">Carpenters (₹900/day)</Label>
                       <Input 
                         id="carpenters"
                         type="number"
-                        placeholder="Enter cost"
+                        placeholder="Enter number of workers"
                         value={state.labor.carpenters || ''}
-                        onChange={(e) => handleInputChange(e, 'labor', 'carpenters')}
+                        onChange={(e) => updateLabor({ carpenters: parseInt(e.target.value) || 0 })}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="painters">Painters (₹)</Label>
+                      <Label htmlFor="painters">Painters (₹700/day)</Label>
                       <Input 
                         id="painters"
                         type="number"
-                        placeholder="Enter cost"
+                        placeholder="Enter number of workers"
                         value={state.labor.painters || ''}
-                        onChange={(e) => handleInputChange(e, 'labor', 'painters')}
+                        onChange={(e) => updateLabor({ painters: parseInt(e.target.value) || 0 })}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="electricians">Electricians (₹)</Label>
+                      <Label htmlFor="electricians">Electricians (₹1000/day)</Label>
                       <Input 
                         id="electricians"
                         type="number"
-                        placeholder="Enter cost"
+                        placeholder="Enter number of workers"
                         value={state.labor.electricians || ''}
-                        onChange={(e) => handleInputChange(e, 'labor', 'electricians')}
+                        onChange={(e) => updateLabor({ electricians: parseInt(e.target.value) || 0 })}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="plumbers">Plumbers (₹)</Label>
+                      <Label htmlFor="plumbers">Plumbers (₹950/day)</Label>
                       <Input 
                         id="plumbers"
                         type="number"
-                        placeholder="Enter cost"
+                        placeholder="Enter number of workers"
                         value={state.labor.plumbers || ''}
-                        onChange={(e) => handleInputChange(e, 'labor', 'plumbers')}
+                        onChange={(e) => updateLabor({ plumbers: parseInt(e.target.value) || 0 })}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="helpers">Helpers (₹)</Label>
+                      <Label htmlFor="helpers">Helpers (₹500/day)</Label>
                       <Input 
                         id="helpers"
                         type="number"
-                        placeholder="Enter cost"
+                        placeholder="Enter number of workers"
                         value={state.labor.helpers || ''}
-                        onChange={(e) => handleInputChange(e, 'labor', 'helpers')}
+                        onChange={(e) => updateLabor({ helpers: parseInt(e.target.value) || 0 })}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="supervisors">Supervisors (₹)</Label>
+                      <Label htmlFor="supervisors">Supervisors (₹1500/day)</Label>
                       <Input 
                         id="supervisors"
                         type="number"
-                        placeholder="Enter cost"
+                        placeholder="Enter number of workers"
                         value={state.labor.supervisors || ''}
-                        onChange={(e) => handleInputChange(e, 'labor', 'supervisors')}
+                        onChange={(e) => updateLabor({ supervisors: parseInt(e.target.value) || 0 })}
                       />
                     </div>
                   </div>
@@ -452,94 +641,153 @@ const Estimate = () => {
                   </div>
                 </TabsContent>
                 
+                {/* OVERHEAD TAB */}
                 <TabsContent value="overhead" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="permits">Permits (₹)</Label>
-                      <Input 
-                        id="permits"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.permits || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'permits')}
-                      />
+                      <Label htmlFor="permit-type">Permit Type</Label>
+                      <Select 
+                        value={state.overhead.permitType}
+                        onValueChange={(value) => updateOverhead({ permitType: value })}
+                      >
+                        <SelectTrigger id="permit-type">
+                          <SelectValue placeholder="Select permit type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(permitPrices).map(([type, price]) => (
+                            <SelectItem key={type} value={type}>
+                              {type.replace(/-/g, ' ').toUpperCase()} (₹{price.toLocaleString()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="design">Design (₹)</Label>
-                      <Input 
-                        id="design"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.design || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'design')}
-                      />
+                      <Label htmlFor="design-complexity">Design Complexity</Label>
+                      <Select 
+                        value={state.overhead.designComplexity}
+                        onValueChange={(value) => updateOverhead({ designComplexity: value })}
+                      >
+                        <SelectTrigger id="design-complexity">
+                          <SelectValue placeholder="Select design complexity" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(designPrices).map(([type, price]) => (
+                            <SelectItem key={type} value={type}>
+                              {type.replace(/-/g, ' ').toUpperCase()} (₹{price.toLocaleString()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="insurance">Insurance (₹)</Label>
-                      <Input 
-                        id="insurance"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.insurance || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'insurance')}
-                      />
+                      <Label htmlFor="insurance-type">Insurance Type</Label>
+                      <Select 
+                        value={state.overhead.insuranceType}
+                        onValueChange={(value) => updateOverhead({ insuranceType: value })}
+                      >
+                        <SelectTrigger id="insurance-type">
+                          <SelectValue placeholder="Select insurance type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(insurancePrices).map(([type, price]) => (
+                            <SelectItem key={type} value={type}>
+                              {type.replace(/-/g, ' ').toUpperCase()} (₹{price.toLocaleString()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="equipment">Equipment (₹)</Label>
+                      <Label htmlFor="transportation-distance">Transportation Distance (km)</Label>
                       <Input 
-                        id="equipment"
+                        id="transportation-distance"
                         type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.equipment || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'equipment')}
+                        placeholder="Enter distance in kilometers"
+                        value={state.overhead.transportationDistance || ''}
+                        onChange={(e) => updateOverhead({ transportationDistance: parseFloat(e.target.value) || 0 })}
                       />
+                      <p className="text-xs text-muted-foreground">Rate: ₹100 per km</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="transportation">Transportation (₹)</Label>
-                      <Input 
-                        id="transportation"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.transportation || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'transportation')}
-                      />
+                      <Label htmlFor="utilities-estimate">Utilities Estimate</Label>
+                      <Select 
+                        value={state.overhead.utilitiesEstimate}
+                        onValueChange={(value) => updateOverhead({ utilitiesEstimate: value })}
+                      >
+                        <SelectTrigger id="utilities-estimate">
+                          <SelectValue placeholder="Select utilities estimate" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(utilitiesPrices).map(([type, price]) => (
+                            <SelectItem key={type} value={type}>
+                              {type.replace(/-/g, ' ').toUpperCase()} (₹{price.toLocaleString()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="utilities">Utilities (₹)</Label>
-                      <Input 
-                        id="utilities"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.utilities || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'utilities')}
-                      />
+                      <Label htmlFor="site-preparation-type">Site Preparation</Label>
+                      <Select 
+                        value={state.overhead.sitePreparationType}
+                        onValueChange={(value) => updateOverhead({ sitePreparationType: value })}
+                      >
+                        <SelectTrigger id="site-preparation-type">
+                          <SelectValue placeholder="Select site preparation type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(sitePreparationPrices).map(([type, price]) => (
+                            <SelectItem key={type} value={type}>
+                              {type.replace(/-/g, ' ').toUpperCase()} (₹{price.toLocaleString()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="sitePreparation">Site Preparation (₹)</Label>
+                      <Label htmlFor="contingency-percentage">Contingency Percentage (%)</Label>
                       <Input 
-                        id="sitePreparation"
+                        id="contingency-percentage"
                         type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.sitePreparation || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'sitePreparation')}
+                        placeholder="Enter contingency percentage"
+                        value={state.overhead.contingencyPercentage || ''}
+                        onChange={(e) => updateOverhead({ contingencyPercentage: parseFloat(e.target.value) || 0 })}
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="contingency">Contingency (₹)</Label>
-                      <Input 
-                        id="contingency"
-                        type="number"
-                        placeholder="Enter cost"
-                        value={state.overhead.contingency || ''}
-                        onChange={(e) => handleInputChange(e, 'overhead', 'contingency')}
-                      />
+                    <div className="space-y-2 col-span-2">
+                      <Label>Equipment Needed</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
+                        {Object.entries(equipmentRates).map(([equipment, rate]) => (
+                          <div key={equipment} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`equipment-${equipment}`}
+                              checked={state.overhead.equipmentNeeded.includes(equipment)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  updateOverhead({ 
+                                    equipmentNeeded: [...state.overhead.equipmentNeeded, equipment] 
+                                  });
+                                } else {
+                                  updateOverhead({ 
+                                    equipmentNeeded: state.overhead.equipmentNeeded.filter(e => e !== equipment) 
+                                  });
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`equipment-${equipment}`} className="text-sm font-normal">
+                              {equipment.replace(/-/g, ' ').toUpperCase()} (₹{rate.toLocaleString()}/month)
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   
