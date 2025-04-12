@@ -1,6 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useEstimator } from '@/contexts/EstimatorContext';
@@ -34,7 +35,6 @@ const Report = () => {
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    // Redirect if no breakdown data
     if (!state.breakdown) {
       toast({
         variant: "destructive",
@@ -46,13 +46,12 @@ const Report = () => {
   }, [state.breakdown, navigate, toast]);
 
   if (!state.breakdown) {
-    return null; // Don't render if no breakdown data
+    return null;
   }
 
   const handleGenerateReport = () => {
     setLoading(true);
     
-    // Simulate report generation delay
     setTimeout(() => {
       setLoading(false);
       setReportGenerated(true);
@@ -65,19 +64,34 @@ const Report = () => {
   };
 
   const handleDownload = () => {
-    toast({
-      title: "Download started",
-      description: "Your report is being downloaded.",
-    });
+    const doc = new jsPDF();
     
-    // In a real implementation, this would trigger an actual PDF download
-    // For now, we'll just simulate it with a timeout
-    setTimeout(() => {
-      toast({
-        title: "Download complete",
-        description: "Report has been saved to your device.",
-      });
-    }, 1500);
+    doc.setTextColor(50);
+    doc.setFontSize(18);
+    doc.text('Project Cost Report', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text(`Project Name: ${state.project.name}`, 20, 40, { align: 'left' });
+    doc.text(`Location: ${state.project.location}`, 20, 50, { align: 'left' });
+    doc.text(`Construction Type: ${state.project.constructionType}`, 20, 60, { align: 'left' });
+    
+    doc.autoTable({
+      startY: 80,
+      head: [['Category', 'Cost']],
+      body: [
+        ['Total Project Cost', state.breakdown ? state.formatCurrency(state.breakdown.total) : 'N/A'],
+        ['Materials', state.breakdown ? state.formatCurrency(state.breakdown.materials.total) : 'N/A'],
+        ['Labor', state.breakdown ? state.formatCurrency(state.breakdown.labor.total) : 'N/A'],
+        ['Overhead', state.breakdown ? state.formatCurrency(state.breakdown.overhead.total) : 'N/A'],
+      ],
+    });
+
+    doc.save('project_cost_report.pdf');
+    
+    toast({
+      title: "Report downloaded",
+      description: "Your project cost report has been saved.",
+    });
   };
 
   const handleEmailReport = () => {
@@ -95,7 +109,6 @@ const Report = () => {
       description: `Sending report to ${email}`,
     });
     
-    // Simulate sending the report
     setTimeout(() => {
       toast({
         title: "Report sent successfully",
@@ -118,7 +131,6 @@ const Report = () => {
             </p>
           </div>
           
-          {/* Report Summary Card */}
           <Card className="mb-8 shadow-md">
             <CardHeader>
               <CardTitle>Report Summary</CardTitle>
@@ -207,7 +219,6 @@ const Report = () => {
             </CardFooter>
           </Card>
           
-          {/* Download Options */}
           {reportGenerated && (
             <Card className="shadow-md">
               <CardHeader>
