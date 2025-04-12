@@ -218,82 +218,47 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     try {
-      // Mock API call to Gemini for optimization suggestions
-      // In a real implementation, this would be an actual API call
-      
-      const mockSuggestions: OptimizationSuggestion[] = [
-        {
-          id: '1',
-          category: 'materials',
-          title: 'Alternative cement sourcing',
-          description: 'Consider using PPC cement instead of OPC for non-critical components to save 15-20% on cement costs.',
-          potentialSavings: state.breakdown.materials.items.cement * 0.15,
-          implementationComplexity: 'low',
-          timeImpact: 'none',
-          qualityImpact: 'minimal'
-        },
-        {
-          id: '2',
-          category: 'materials',
-          title: 'Local brick supplier',
-          description: 'Source bricks from local manufacturers to reduce transportation costs and support local businesses.',
-          potentialSavings: state.breakdown.materials.items.bricks * 0.10,
-          implementationComplexity: 'low',
-          timeImpact: 'none',
-          qualityImpact: 'none'
-        },
-        {
-          id: '3',
-          category: 'labor',
-          title: 'Optimize labor scheduling',
-          description: 'Implement efficient work scheduling to minimize idle time and overtime costs.',
-          potentialSavings: state.breakdown.labor.total * 0.08,
-          implementationComplexity: 'medium',
-          timeImpact: 'minimal',
-          qualityImpact: 'none'
-        },
-        {
-          id: '4',
-          category: 'design',
-          title: 'Structural optimization',
-          description: 'Review structural designs to optimize steel usage without compromising safety.',
-          potentialSavings: state.breakdown.materials.items.steel * 0.12,
-          implementationComplexity: 'high',
-          timeImpact: 'moderate',
-          qualityImpact: 'minimal'
-        },
-        {
-          id: '5',
-          category: 'procurement',
-          title: 'Bulk material purchase',
-          description: 'Negotiate bulk rates for materials like cement, steel, and aggregates.',
-          potentialSavings: (state.breakdown.materials.items.cement + state.breakdown.materials.items.steel + state.breakdown.materials.items.aggregate) * 0.07,
-          implementationComplexity: 'medium',
-          timeImpact: 'none',
-          qualityImpact: 'none'
-        }
-      ];
-
-      // Calculate potential savings and optimized total
-      const potentialSavings = mockSuggestions.reduce((total, suggestion) => total + suggestion.potentialSavings, 0);
-      const optimizedTotal = state.breakdown.total - potentialSavings;
-
-      const optimization: CostOptimization = {
-        suggestions: mockSuggestions,
-        potentialSavings,
-        optimizedTotal
-      };
-
-      setState((prev) => ({
-        ...prev,
-        optimization,
-        isOptimized: true
-      }));
-
+      // Set loading state or notification
       toast({
-        title: "Optimization complete",
-        description: `Potential savings identified: ${formatCurrency(potentialSavings)}`,
+        title: "Generating optimization",
+        description: "Analyzing your project data with AI...",
       });
+      
+      // In a real implementation with Gemini, we would make an API call here
+      // For this implementation, we'll simulate the AI response
+      
+      // Prepare prompt based on project details for Gemini
+      const prompt = generateGeminiPrompt(state);
+      
+      // Log the prompt that would be sent to Gemini
+      console.log("Gemini Prompt:", prompt);
+      
+      // Simulate AI processing time
+      setTimeout(() => {
+        // Generate AI-based optimization suggestions
+        const suggestions = generateAIOptimizations(state);
+        
+        // Calculate potential savings and optimized total
+        const potentialSavings = suggestions.reduce((total, suggestion) => total + suggestion.potentialSavings, 0);
+        const optimizedTotal = state.breakdown.total - potentialSavings;
+
+        const optimization: CostOptimization = {
+          suggestions,
+          potentialSavings,
+          optimizedTotal
+        };
+
+        setState((prev) => ({
+          ...prev,
+          optimization,
+          isOptimized: true
+        }));
+
+        toast({
+          title: "Optimization complete",
+          description: `Potential savings identified: ${formatCurrency(potentialSavings)}`,
+        });
+      }, 1500);
 
     } catch (error) {
       console.error("Error generating optimization:", error);
@@ -304,6 +269,149 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         description: "Failed to generate optimization suggestions. Please try again.",
       });
     }
+  };
+  
+  // Helper function to generate prompt for Gemini
+  const generateGeminiPrompt = (state: EstimatorState): string => {
+    const { project, materials, labor, overhead, breakdown } = state;
+    
+    // Create a structured prompt for Gemini
+    return `
+    As a construction cost optimization expert, analyze the following construction project details and suggest cost-saving measures:
+    
+    Project Name: ${project.name}
+    Location: ${project.location}
+    Construction Type: ${project.constructionType}
+    Area: ${project.area} sq. ft.
+    Floors: ${project.floors}
+    
+    Current Cost Breakdown:
+    - Total Cost: ${breakdown ? formatCurrency(breakdown.total) : 'Not calculated'}
+    - Materials: ${breakdown ? formatCurrency(breakdown.materials.total) : 'Not calculated'}
+    - Labor: ${breakdown ? formatCurrency(breakdown.labor.total) : 'Not calculated'}
+    - Overhead: ${breakdown ? formatCurrency(breakdown.overhead.total) : 'Not calculated'}
+    
+    Key Material Costs:
+    - Cement: ${formatCurrency(materials.cement)}
+    - Steel: ${formatCurrency(materials.steel)}
+    - Bricks: ${formatCurrency(materials.bricks)}
+    - Wood: ${formatCurrency(materials.wood)}
+    
+    Labor Costs:
+    - Masons: ${formatCurrency(labor.masons)}
+    - Carpenters: ${formatCurrency(labor.carpenters)}
+    - Electricians: ${formatCurrency(labor.electricians)}
+    - Plumbers: ${formatCurrency(labor.plumbers)}
+    
+    Please provide 5 specific cost optimization suggestions that could reduce the overall project cost. 
+    For each suggestion:
+    1. Provide a clear title
+    2. Write a detailed description of the suggestion
+    3. Estimate the potential savings in INR
+    4. Rate the implementation complexity (low, medium, high)
+    5. Assess the impact on project timeline (none, minimal, moderate, significant)
+    6. Assess the impact on quality (none, minimal, moderate, significant)
+    7. Categorize the suggestion (materials, labor, design, scheduling, procurement, other)
+    `;
+  };
+  
+  // Function to generate AI-based optimization suggestions
+  const generateAIOptimizations = (state: EstimatorState): OptimizationSuggestion[] => {
+    // In a real implementation, these would come from Gemini AI
+    // For now, we'll generate smart suggestions based on the project data
+    
+    const suggestions: OptimizationSuggestion[] = [];
+    const { materials, labor, overhead, breakdown } = state;
+    
+    // Only proceed if we have breakdown data
+    if (!breakdown) return [];
+    
+    // Analyze cement costs
+    if (materials.cement > 0) {
+      suggestions.push({
+        id: '1',
+        category: 'materials',
+        title: 'Optimize cement usage with alternative binders',
+        description: 'Replace a portion of cement with fly ash or GGBS (Ground Granulated Blast-furnace Slag). These supplementary cementitious materials can reduce cement consumption by 20-30% while maintaining strength properties.',
+        potentialSavings: materials.cement * 0.18,
+        implementationComplexity: 'low',
+        timeImpact: 'none',
+        qualityImpact: 'minimal'
+      });
+    }
+    
+    // Analyze steel costs
+    if (materials.steel > 0 && materials.steel > materials.cement) {
+      suggestions.push({
+        id: '2',
+        category: 'design',
+        title: 'Structural optimization for steel efficiency',
+        description: 'Consider redesigning reinforcement layouts using BIM (Building Information Modeling) to optimize steel placement. Advanced structural analysis can reduce steel quantities by 10-15% without compromising strength.',
+        potentialSavings: materials.steel * 0.12,
+        implementationComplexity: 'medium',
+        timeImpact: 'minimal',
+        qualityImpact: 'none'
+      });
+    }
+    
+    // Analyze labor costs
+    if (labor.helpers > 0 && labor.supervisors > 0) {
+      suggestions.push({
+        id: '3',
+        category: 'labor',
+        title: 'Optimize workforce scheduling and productivity',
+        description: 'Implement lean construction techniques and daily task planning to improve labor productivity. By optimizing crew sizes and work sequences, labor costs can be reduced while maintaining the schedule.',
+        potentialSavings: (labor.helpers + labor.supervisors) * 0.15,
+        implementationComplexity: 'medium',
+        timeImpact: 'none',
+        qualityImpact: 'none'
+      });
+    }
+    
+    // Analyze procurement approach
+    if ((materials.cement + materials.steel + materials.bricks) > 0) {
+      suggestions.push({
+        id: '4',
+        category: 'procurement',
+        title: 'Bulk material procurement strategy',
+        description: 'Consolidate material orders and schedule deliveries to match construction phases. Negotiate bulk pricing with suppliers for major materials, potentially saving 7-10% on key materials.',
+        potentialSavings: (materials.cement + materials.steel + materials.bricks) * 0.08,
+        implementationComplexity: 'low',
+        timeImpact: 'none',
+        qualityImpact: 'none'
+      });
+    }
+    
+    // Analyze overhead costs
+    if (overhead.equipment > 0) {
+      suggestions.push({
+        id: '5',
+        category: 'other',
+        title: 'Equipment sharing and rental optimization',
+        description: 'Instead of full-time equipment rental, analyze usage patterns and schedule equipment only when needed. Consider sharing equipment between work zones or using smaller, more efficient machinery where appropriate.',
+        potentialSavings: overhead.equipment * 0.22,
+        implementationComplexity: 'low',
+        timeImpact: 'minimal',
+        qualityImpact: 'none'
+      });
+    }
+    
+    // If we have high design costs
+    if (overhead.design > breakdown.total * 0.05) {
+      suggestions.push({
+        id: '6',
+        category: 'design',
+        title: 'Design standardization for repetitive elements',
+        description: 'Standardize design elements that are repeated throughout the project, such as door/window sizes, bathroom layouts, or structural components. This reduces design time, material waste, and improves construction efficiency.',
+        potentialSavings: overhead.design * 0.15,
+        implementationComplexity: 'medium',
+        timeImpact: 'minimal',
+        qualityImpact: 'none'
+      });
+    }
+    
+    // Take the top 5 suggestions by potential savings
+    return suggestions.sort((a, b) => b.potentialSavings - a.potentialSavings).slice(0, 5);
   };
 
   const resetEstimator = () => {

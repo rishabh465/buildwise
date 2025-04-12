@@ -26,6 +26,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
+
 const Report = () => {
   const navigate = useNavigate();
   const { state, formatCurrency } = useEstimator();
@@ -79,12 +85,42 @@ const Report = () => {
       startY: 80,
       head: [['Category', 'Cost']],
       body: [
-        ['Total Project Cost', state.breakdown ? state.formatCurrency(state.breakdown.total) : 'N/A'],
-        ['Materials', state.breakdown ? state.formatCurrency(state.breakdown.materials.total) : 'N/A'],
-        ['Labor', state.breakdown ? state.formatCurrency(state.breakdown.labor.total) : 'N/A'],
-        ['Overhead', state.breakdown ? state.formatCurrency(state.breakdown.overhead.total) : 'N/A'],
+        ['Total Project Cost', formatCurrency(state.breakdown.total)],
+        ['Materials', formatCurrency(state.breakdown.materials.total)],
+        ['Labor', formatCurrency(state.breakdown.labor.total)],
+        ['Overhead', formatCurrency(state.breakdown.overhead.total)],
       ],
     });
+
+    if (state.optimization) {
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.text('Cost Optimization Suggestions', 105, 20, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.text('Potential Savings Overview', 20, 40);
+      
+      doc.setFontSize(12);
+      doc.text(`Original Cost: ${formatCurrency(state.breakdown.total)}`, 20, 55);
+      doc.text(`Potential Savings: ${formatCurrency(state.optimization.potentialSavings)}`, 20, 65);
+      doc.text(`Optimized Cost: ${formatCurrency(state.optimization.optimizedTotal)}`, 20, 75);
+      
+      doc.setFontSize(14);
+      doc.text('Detailed Suggestions', 20, 95);
+      
+      const suggestionData = state.optimization.suggestions.map((suggestion, index) => [
+        `${index + 1}. ${suggestion.title}`,
+        suggestion.category,
+        formatCurrency(suggestion.potentialSavings),
+        suggestion.implementationComplexity
+      ]);
+      
+      doc.autoTable({
+        startY: 100,
+        head: [['Suggestion', 'Category', 'Savings', 'Complexity']],
+        body: suggestionData
+      });
+    }
 
     doc.save('project_cost_report.pdf');
     
