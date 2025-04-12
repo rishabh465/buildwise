@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Construction Cost estimator
 
 ## Project info
 
