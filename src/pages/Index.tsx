@@ -2,9 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Calculator, BarChart3, Banknote, FileDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { Building, Calculator, LineChart, AreaChart, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -13,74 +14,114 @@ const Index = () => {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative py-20 md:py-32 overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/5"></div>
-          </div>
+        <section className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-foreground to-primary/10 z-[-1]" />
+          <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] bg-repeat opacity-5 z-[-1]" />
           
-          <div className="container relative z-10 max-w-screen-xl px-4">
-            <div className="grid gap-12 md:grid-cols-2 md:gap-16 items-center">
-              <div className="flex flex-col gap-6">
-                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-                  <span>Free Construction Cost Estimator</span>
-                </div>
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                  Accurate Cost Estimation for Your Building Projects
+          <div className="container px-4 py-16 md:py-24 lg:py-32">
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className="lg:w-1/2 space-y-6">
+                <Badge variant="outline" className="py-1.5 px-4 border-primary/50 text-sm">
+                  Construction Cost Estimation
+                </Badge>
+                
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+                  Smarter <span className="text-primary">construction cost</span> estimates with AI
                 </h1>
-                <p className="text-xl text-muted-foreground">
-                  Instantly calculate construction costs with detailed breakdowns, interactive visualizations, 
-                  and AI-powered cost optimization suggestions.
+                
+                <p className="text-lg text-muted-foreground max-w-md">
+                  BuildWise helps you create accurate construction cost estimates with AI-powered predictions and optimization suggestions.
                 </p>
-                <div className="flex flex-col gap-4 sm:flex-row">
+                
+                <div className="flex flex-wrap gap-3 pt-4">
                   <Button asChild size="lg" className="gap-2">
                     <Link to="/estimate">
                       Get Started <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
+                  
                   <Button asChild variant="outline" size="lg">
-                    <a href="#features">Learn More</a>
+                    <Link to="/projects">
+                      View Projects
+                    </Link>
                   </Button>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <div className="flex items-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
+                    <span>AI-powered predictions</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
+                    <span>Cost optimization</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
+                    <span>Data visualization</span>
+                  </div>
                 </div>
               </div>
               
-              <div className="relative aspect-square md:aspect-auto md:h-[600px] rounded-lg bg-gradient-to-br from-primary/10 to-accent/20 p-6 shadow-xl flex items-center justify-center">
-                <img 
-                  src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1169&q=80" 
-                  alt="Construction project" 
-                  className="absolute inset-0 w-full h-full object-cover rounded-lg opacity-60"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-accent/40 mix-blend-multiply rounded-lg"></div>
-                <div className="relative z-10 bg-white/90 backdrop-blur-sm rounded-lg p-6 shadow-lg max-w-md">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">Project Cost Summary</h3>
-                      <span className="text-xs text-muted-foreground">Demo</span>
+              <div className="lg:w-1/2 flex justify-center">
+                <div className="relative w-full max-w-lg">
+                  <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary to-secondary opacity-30 blur-xl"></div>
+                  <div className="relative rounded-lg border bg-card p-6 text-card-foreground shadow-lg">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold">Project Overview</h3>
+                      <Badge>AI Assisted</Badge>
                     </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>Materials</span>
-                        <span className="font-medium">₹15,35,000</span>
+                    
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Total Estimate</p>
+                          <p className="text-2xl font-bold">₹24,85,000</p>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Potential Savings</p>
+                          <p className="text-2xl font-bold text-green-600">₹3,25,000</p>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Labor</span>
-                        <span className="font-medium">₹8,75,000</span>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span>Materials</span>
+                          <span className="font-medium">₹14,32,000</span>
+                        </div>
+                        <div className="h-2 w-full bg-primary/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full" style={{ width: "58%" }}></div>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Equipment</span>
-                        <span className="font-medium">₹3,45,000</span>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span>Labor</span>
+                          <span className="font-medium">₹7,45,000</span>
+                        </div>
+                        <div className="h-2 w-full bg-secondary/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-secondary rounded-full" style={{ width: "30%" }}></div>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Overhead</span>
-                        <span className="font-medium">₹2,75,000</span>
-                      </div>
-                      <div className="h-px bg-border"></div>
-                      <div className="flex justify-between font-bold">
-                        <span>Total</span>
-                        <span>₹30,30,000</span>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span>Overhead</span>
+                          <span className="font-medium">₹3,08,000</span>
+                        </div>
+                        <div className="h-2 w-full bg-accent/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-accent rounded-full" style={{ width: "12%" }}></div>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground mt-2">
-                      Click "Get Started" to create your own estimate.
+                    
+                    <div className="flex justify-between mt-6">
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <AreaChart className="h-4 w-4" /> Details
+                      </Button>
+                      <Button size="sm" className="gap-1">
+                        <LineChart className="h-4 w-4" /> Optimize
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -90,53 +131,37 @@ const Index = () => {
         </section>
         
         {/* Features Section */}
-        <section id="features" className="py-20 bg-muted/50">
-          <div className="container max-w-screen-xl px-4">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-3xl font-bold sm:text-4xl mb-4">Comprehensive Construction Cost Estimation</h2>
-              <p className="text-lg text-muted-foreground">
-                Our powerful tool provides end-to-end estimation capabilities, from project input to downloadable reports.
+        <section className="py-16 bg-muted/50">
+          <div className="container px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Key Features</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                BuildWise helps construction professionals create accurate cost estimates with powerful AI-driven tools
               </p>
             </div>
             
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-              <div className="card-gradient rounded-xl border p-6 shadow-sm transition-all hover:shadow-md">
-                <div className="mb-4 rounded-full bg-primary/10 p-3 w-fit">
-                  <Calculator className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="mb-2 text-xl font-bold">Accurate Estimations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-card rounded-lg border p-6 shadow-sm">
+                <Calculator className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-medium mb-2">Detailed Cost Estimation</h3>
                 <p className="text-muted-foreground">
-                  Precise calculations based on project parameters with detailed breakdowns.
+                  Create comprehensive cost breakdowns for materials, labor, and overhead expenses with ease.
                 </p>
               </div>
               
-              <div className="card-gradient rounded-xl border p-6 shadow-sm transition-all hover:shadow-md">
-                <div className="mb-4 rounded-full bg-primary/10 p-3 w-fit">
-                  <BarChart3 className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="mb-2 text-xl font-bold">Interactive Dashboard</h3>
+              <div className="bg-card rounded-lg border p-6 shadow-sm">
+                <LineChart className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-medium mb-2">Cost Optimization</h3>
                 <p className="text-muted-foreground">
-                  Visualize your project costs with interactive charts and detailed breakdowns.
+                  Get AI-powered recommendations to reduce costs without compromising quality or timelines.
                 </p>
               </div>
               
-              <div className="card-gradient rounded-xl border p-6 shadow-sm transition-all hover:shadow-md">
-                <div className="mb-4 rounded-full bg-primary/10 p-3 w-fit">
-                  <Banknote className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="mb-2 text-xl font-bold">Cost Optimization</h3>
+              <div className="bg-card rounded-lg border p-6 shadow-sm">
+                <AreaChart className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-medium mb-2">Visual Analytics</h3>
                 <p className="text-muted-foreground">
-                  AI-powered suggestions to reduce costs without compromising quality.
-                </p>
-              </div>
-              
-              <div className="card-gradient rounded-xl border p-6 shadow-sm transition-all hover:shadow-md">
-                <div className="mb-4 rounded-full bg-primary/10 p-3 w-fit">
-                  <FileDown className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="mb-2 text-xl font-bold">Report Generation</h3>
-                <p className="text-muted-foreground">
-                  Download comprehensive reports with all estimation details and suggestions.
+                  Visualize cost data with interactive charts and dashboards for better decision making.
                 </p>
               </div>
             </div>
@@ -144,48 +169,28 @@ const Index = () => {
         </section>
         
         {/* CTA Section */}
-        <section className="py-20">
-          <div className="container max-w-screen-xl px-4">
-            <div className="rounded-2xl bg-gradient-to-r from-primary to-accent p-8 md:p-12 shadow-lg">
-              <div className="grid gap-6 md:grid-cols-2 md:gap-12 items-center">
-                <div>
-                  <h2 className="text-3xl font-bold text-white mb-4">Ready to Estimate Your Construction Costs?</h2>
-                  <p className="text-white/90 text-lg mb-6">
-                    Start now and get accurate estimates in minutes. No sign-up required.
-                  </p>
-                  <Button asChild size="lg" variant="secondary" className="gap-2">
-                    <Link to="/estimate">
-                      Start Estimating <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-                <div className="hidden md:block relative">
-                  <div className="absolute inset-0 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20"></div>
-                  <div className="relative p-6">
-                    <ul className="space-y-4 text-white">
-                      <li className="flex items-center gap-2">
-                        <div className="rounded-full bg-white h-1.5 w-1.5"></div>
-                        <span>Instant calculation with real-time updates</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="rounded-full bg-white h-1.5 w-1.5"></div>
-                        <span>Detailed breakdown of all cost components</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="rounded-full bg-white h-1.5 w-1.5"></div>
-                        <span>AI-powered cost optimization suggestions</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="rounded-full bg-white h-1.5 w-1.5"></div>
-                        <span>Downloadable PDF reports for your records</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="rounded-full bg-white h-1.5 w-1.5"></div>
-                        <span>No sign-up or registration required</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
+        <section className="py-16 bg-primary/5">
+          <div className="container px-4">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-8 p-8 rounded-xl bg-gradient-to-br from-card to-background border shadow-sm">
+              <div className="space-y-4 text-center lg:text-left">
+                <h2 className="text-3xl font-bold">Ready to get started?</h2>
+                <p className="text-muted-foreground max-w-md">
+                  Create your first construction cost estimate in minutes with our intuitive tool.
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-4">
+                <Button asChild size="lg" className="gap-2">
+                  <Link to="/estimate">
+                    Create Estimate <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                
+                <Button asChild variant="outline" size="lg">
+                  <Link to="/auth">
+                    Sign Up
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>

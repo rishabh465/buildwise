@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Building2, BarChart3, Calculator, FileText, Settings, LogOut, User } from 'lucide-react';
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from '@/components/ui/use-toast';
+import { CurrencySelector } from '@/components/CurrencySelector';
+import { useAuth } from '@/contexts/AuthContext';
+import { Building, LogOut, LayoutDashboard, Calculator, LineChart, FileText, FolderOpen, LogIn } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,109 +12,102 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { CurrencySelector } from '@/components/CurrencySelector';
-import { Session } from '@supabase/supabase-js';
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const Navbar = () => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [session, setSession] = useState<Session | null>(null);
+  const location = useLocation();
+  const { user, signOut } = useAuth();
   
-  React.useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "You have been signed out of your account.",
-      });
-      navigate('/');
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Sign out failed",
-        description: "There was an error signing out. Please try again.",
-      });
-    }
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
-
+  
+  const getInitials = (email: string) => {
+    if (!email) return 'U';
+    return email.charAt(0).toUpperCase();
+  };
+  
+  const navItems = [
+    { path: '/dashboard', icon: <LayoutDashboard className="mr-2 h-4 w-4" />, label: 'Dashboard' },
+    { path: '/estimate', icon: <Calculator className="mr-2 h-4 w-4" />, label: 'Estimate' },
+    { path: '/optimize', icon: <LineChart className="mr-2 h-4 w-4" />, label: 'Optimize' },
+    { path: '/report', icon: <FileText className="mr-2 h-4 w-4" />, label: 'Report' },
+    { path: '/projects', icon: <FolderOpen className="mr-2 h-4 w-4" />, label: 'Projects' }
+  ];
+  
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center">
-        <Link to="/" className="flex items-center gap-2 font-semibold">
-          <Building2 className="h-6 w-6 text-primary" />
-          <span className="hidden sm:inline-block">BuildWise</span>
-          <span className="inline-block sm:hidden">BW</span>
-        </Link>
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center">
+        <div className="mr-4 flex">
+          <Link to="/" className="flex items-center space-x-2">
+            <Building className="h-6 w-6 text-primary" />
+            <span className="hidden font-bold sm:inline-block">BuildWise</span>
+          </Link>
+        </div>
         
-        <nav className="ml-auto flex items-center gap-4">
-          <Link to="/estimate" className="text-sm font-medium hover:text-primary transition-colors">
-            Estimate
-          </Link>
-          <Link to="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
-            Dashboard
-          </Link>
-          <Link to="/optimize" className="text-sm font-medium hover:text-primary transition-colors">
-            Optimize
-          </Link>
-          <Link to="/report" className="text-sm font-medium hover:text-primary transition-colors">
-            Report
-          </Link>
-          
-          <div className="ml-2">
+        <nav className="flex items-center space-x-1 lg:space-x-4 mx-6">
+          {navItems.map((item) => (
+            <Button
+              key={item.path}
+              variant={isActive(item.path) ? "secondary" : "ghost"}
+              asChild
+              size="sm"
+              className="hidden sm:flex"
+            >
+              <Link to={item.path} className="flex items-center">
+                {item.icon}
+                <span className="hidden lg:block">{item.label}</span>
+              </Link>
+            </Button>
+          ))}
+        </nav>
+        
+        <div className="flex flex-1 items-center justify-end space-x-4">
+          <div className="hidden md:block">
             <CurrencySelector />
           </div>
           
-          {session ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <User className="h-5 w-5" />
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {getInitials(user.email || '')}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuItem disabled className="text-sm opacity-70">
+                  {user.email}
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/projects">My Projects</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                  <Link to="/projects" className="cursor-pointer">
+                    <FolderOpen className="mr-2 h-4 w-4" /> My Projects
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                <DropdownMenuItem
+                  className="text-red-600 cursor-pointer focus:text-red-600"
+                  onClick={() => signOut()}
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button asChild variant="default" size="sm">
-              <Link to="/auth">
+              <Link to="/auth" className="flex items-center">
+                <LogIn className="mr-2 h-4 w-4" />
                 Sign In
               </Link>
             </Button>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
