@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import { 
   EstimatorState, 
@@ -14,8 +15,8 @@ import { calculateCostBreakdown } from '@/lib/costCalculator';
 import { generateOptimizations, generatePrediction, savePredictionToDatabase, saveOptimizationsToDatabase } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { dbToAppOptimization } from '@/lib/adapters';
 
+// Default values
 const defaultProject: ProjectDetails = {
   name: '',
   location: '',
@@ -408,7 +409,16 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         
       if (!optimizationsError && optimizations && optimizations.length > 0) {
         // Transform DB optimizations to our app format
-        const suggestions: OptimizationSuggestion[] = optimizations.map(dbToAppOptimization);
+        const suggestions: OptimizationSuggestion[] = optimizations.map(opt => ({
+          id: opt.id,
+          title: opt.title,
+          description: opt.description,
+          category: opt.category as any,
+          potentialSavings: opt.potential_savings,
+          implementationComplexity: opt.implementation_complexity as any,
+          timeImpact: opt.time_impact as any,
+          qualityImpact: opt.quality_impact as any
+        }));
         
         const potentialSavings = suggestions.reduce((total, suggestion) => 
           total + suggestion.potentialSavings, 0);
