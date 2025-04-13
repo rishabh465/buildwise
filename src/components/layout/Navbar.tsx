@@ -31,7 +31,6 @@ const Navbar = () => {
     { path: '/estimate', icon: <Calculator className="mr-2 h-4 w-4" />, label: 'Estimate' },
     { path: '/optimize', icon: <LineChart className="mr-2 h-4 w-4" />, label: 'Optimize' },
     { path: '/dashboard', icon: <LayoutDashboard className="mr-2 h-4 w-4" />, label: 'Dashboard' },
-    { path: '/projects', icon: <FolderOpen className="mr-2 h-4 w-4" />, label: 'Projects' }
   ];
   
   return (
@@ -80,9 +79,7 @@ const Navbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/projects" className="cursor-pointer">
-                    <FolderOpen className="mr-2 h-4 w-4" /> My Projects
-                  </Link>
+
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
