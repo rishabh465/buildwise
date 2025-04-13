@@ -99,30 +99,34 @@ const Report = () => {
       doc.text('Cost Summary', 20, 85);
       
       doc.autoTable({
+        startY: 90,
+        head: [['Category', 'Amount']],
         body: [
           ['Materials', formatCurrency(state.breakdown.materials.total)],
           ['Labor', formatCurrency(state.breakdown.labor.total)],
           ['Overhead', formatCurrency(state.breakdown.overhead.total)],
           ['Total Project Cost', formatCurrency(state.breakdown.total)]
         ],
-        head: [['Category', 'Amount']],
         headStyles: { fillColor: [139, 92, 246] },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-      }, doc.internal.pageSize.height);
+      });
       
       const materialItems = Object.entries(state.breakdown.materials.items)
         .filter(([_, value]) => value > 0)
         .map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), formatCurrency(value)]);
         
       if (materialItems.length > 0) {
+        const lastY = (doc as any).lastAutoTable?.finalY || 90;
+        
         doc.autoTable({
-          body: materialItems,
+          startY: lastY + 10,
           head: [['Material', 'Cost']],
+          body: materialItems,
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        }, doc.internal.pageSize.height);
+        });
       }
       
       const laborItems = Object.entries(state.breakdown.labor.items)
@@ -139,23 +143,25 @@ const Report = () => {
           doc.text('Labor Cost Breakdown', 20, 20);
           
           doc.autoTable({
-            body: laborItems,
+            startY: 25,
             head: [['Labor Category', 'Cost']],
+            body: laborItems,
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc.internal.pageSize.height);
+          });
         } else {
           doc.setFontSize(14);
           doc.text('Labor Cost Breakdown', 20, newY);
           
           doc.autoTable({
-            body: laborItems,
+            startY: newY + 5,
             head: [['Labor Category', 'Cost']],
+            body: laborItems,
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc.internal.pageSize.height);
+          });
         }
       }
       
@@ -173,23 +179,25 @@ const Report = () => {
           doc.text('Overhead Cost Breakdown', 20, 20);
           
           doc.autoTable({
-            body: overheadItems,
+            startY: 25,
             head: [['Overhead Category', 'Cost']],
+            body: overheadItems,
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc.internal.pageSize.height);
+          });
         } else {
           doc.setFontSize(14);
           doc.text('Overhead Cost Breakdown', 20, newY);
           
           doc.autoTable({
-            body: overheadItems,
+            startY: newY + 5,
             head: [['Overhead Category', 'Cost']],
+            body: overheadItems,
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc.internal.pageSize.height);
+          });
         }
       }
 
@@ -220,7 +228,7 @@ const Report = () => {
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        } as any);
+        });
         
         const lastY = (doc as any).lastAutoTable?.finalY || 70;
         const newY = lastY + 15;
