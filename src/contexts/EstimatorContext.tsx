@@ -114,110 +114,161 @@ const unitCostDatabase: UnitCostDatabase = {
       'Fine': 1800,
       'Coarse': 2200,
       'River': 2500,
+      'Manufactured': 2100,
+      'Desert': 1700
     },
     cement: {
       'OPC 33 Grade': 350,
       'OPC 43 Grade': 380,
       'OPC 53 Grade': 410,
       'PPC': 360,
+      'PSC': 370,
+      'White Cement': 950
     },
     aggregate: {
       '10mm': 1800,
       '20mm': 1600,
       '40mm': 1500,
+      '60mm': 1450,
+      'Recycled': 1200
     },
     steel: {
       'TMT Bars': 65,
       'Mild Steel': 60,
       'Stainless Steel': 180,
+      'CRS Bars': 75,
+      'High Tensile': 85
     },
     bricks: {
       'Red Clay': 8,
       'Fly Ash': 7,
       'AAC Blocks': 60,
+      'CLC Blocks': 50,
+      'Concrete Blocks': 45,
+      'Fire Bricks': 18
     },
     wood: {
       'Pine': 1200,
       'Teak': 3500,
       'Oak': 2800,
       'Mahogany': 3200,
+      'Walnut': 2900,
+      'Cedar': 2500,
+      'Ash': 2200,
+      'Maple': 2600
     },
     paint: {
       'Emulsion': 250,
       'Enamel': 290,
       'Distemper': 160,
       'Exterior': 320,
+      'Acrylic': 300,
+      'Luxury': 550,
+      'Anti-fungal': 380
     },
     electrical: {
       'Basic': {
         'Low': 15000,
         'Medium': 25000,
-        'High': 40000,
+        'High': 40000
       },
       'Standard': {
         'Low': 30000,
         'Medium': 45000,
-        'High': 65000,
+        'High': 65000
       },
       'Premium': {
         'Low': 60000,
         'Medium': 85000,
-        'High': 120000,
+        'High': 120000
       },
+      'Smart': {
+        'Low': 80000,
+        'Medium': 120000,
+        'High': 180000
+      }
     },
     plumbing: {
       'Basic': {
         'Low': 18000,
         'Medium': 30000,
-        'High': 45000,
+        'High': 45000
       },
       'Standard': {
         'Low': 40000,
         'Medium': 55000,
-        'High': 75000,
+        'High': 75000
       },
       'Premium': {
         'Low': 70000,
         'Medium': 95000,
-        'High': 130000,
+        'High': 130000
       },
+      'Luxury': {
+        'Low': 100000,
+        'Medium': 135000,
+        'High': 180000
+      }
     },
     fixtures: {
       'Basic': 2000,
       'Standard': 3500,
       'Premium': 7000,
+      'Luxury': 12000,
+      'Designer': 18000
     },
     windows: {
       'Wooden': 5000,
       'Aluminum': 7000,
       'UPVC': 9000,
+      'Steel': 6500,
+      'Soundproof': 12000,
+      'Double Glazed': 14000
     },
     doors: {
       'Wooden': 4500,
       'Flush': 3000,
       'Fiber': 6000,
+      'PVC': 3500,
+      'Metal': 8000,
+      'Security': 12000
     },
     roofing: {
       'RCC': 2200,
       'Metal Sheet': 1200,
       'Clay Tiles': 1800,
+      'Asphalt Shingles': 1400,
+      'Green Roof': 3000,
+      'Solar Tiles': 5500
     },
     flooring: {
       'Ceramic Tiles': 850,
       'Vitrified Tiles': 1200,
       'Marble': 2500,
       'Granite': 2200,
+      'Wooden': 1800,
+      'Laminate': 1000,
+      'Vinyl': 750,
+      'Concrete': 600,
+      'Epoxy': 1500
     },
     glasswork: {
       'Plain': 700,
       'Toughened': 1800,
       'Tinted': 1100,
+      'Reflective': 1600,
+      'Insulated': 2200,
+      'Smart Glass': 4500
     },
     tilesMarble: {
       'Ceramic': 850,
       'Vitrified': 1200,
       'Marble': 2500,
       'Granite': 2200,
+      'Travertine': 2100,
+      'Slate': 1800,
+      'Onyx': 3800,
+      'Limestone': 1600
     },
   },
   labor: {
@@ -227,58 +278,72 @@ const unitCostDatabase: UnitCostDatabase = {
     electrician: 1000,
     plumber: 1000,
     helper: 500,
-    supervisor: 1500,
+    supervisor: 1500
   },
   overhead: {
     permits: {
       'Basic': {
         'Low': 15000,
         'Medium': 25000,
-        'High': 40000,
+        'High': 40000
       },
       'Complex': {
         'Low': 35000,
         'Medium': 50000,
-        'High': 80000,
+        'High': 80000
       },
+      'Industrial': {
+        'Low': 50000,
+        'Medium': 75000,
+        'High': 100000
+      }
     },
     design: {
       'Low': {
         1: 30000,
         2: 40000,
-        3: 50000,
+        3: 50000
       },
       'Medium': {
         1: 60000,
         2: 75000,
-        3: 90000,
+        3: 90000
       },
       'High': {
         1: 100000,
         2: 120000,
-        3: 150000,
+        3: 150000
       },
+      'Premium': {
+        1: 180000,
+        2: 220000,
+        3: 280000
+      }
     },
     insurance: {
       'Basic': 250,
       'Standard': 400,
       'Comprehensive': 600,
+      'Premium': 900
     },
     equipment: {
       'Basic': 1000,
       'Standard': 2000,
       'Heavy': 5000,
+      'Specialized': 8000
     },
     utilities: {
       'Basic': 30,
       'Standard': 50,
       'High': 80,
+      'Industrial': 150
     },
     sitePreparation: {
       'Low': 75,
       'Medium': 150,
       'High': 300,
-    },
+      'Complex': 500
+    }
   },
 };
 
@@ -481,11 +546,23 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     materials.paint = unitCostDatabase.materials.paint[materialQuantities.paint.type] * 
       materialQuantities.paint.amount;
     
-    // Electrical
-    materials.electrical = unitCostDatabase.materials.electrical[materialQuantities.electrical.components][materialQuantities.electrical.complexity];
+    // Electrical - Fix types issue
+    const electricalComponents = materialQuantities.electrical.components;
+    const electricalComplexity = materialQuantities.electrical.complexity;
+    if (electricalComponents && electricalComplexity && 
+        unitCostDatabase.materials.electrical[electricalComponents] && 
+        unitCostDatabase.materials.electrical[electricalComponents][electricalComplexity]) {
+      materials.electrical = unitCostDatabase.materials.electrical[electricalComponents][electricalComplexity];
+    }
     
-    // Plumbing
-    materials.plumbing = unitCostDatabase.materials.plumbing[materialQuantities.plumbing.components][materialQuantities.plumbing.complexity];
+    // Plumbing - Fix types issue
+    const plumbingComponents = materialQuantities.plumbing.components;
+    const plumbingComplexity = materialQuantities.plumbing.complexity;
+    if (plumbingComponents && plumbingComplexity && 
+        unitCostDatabase.materials.plumbing[plumbingComponents] && 
+        unitCostDatabase.materials.plumbing[plumbingComponents][plumbingComplexity]) {
+      materials.plumbing = unitCostDatabase.materials.plumbing[plumbingComponents][plumbingComplexity];
+    }
     
     // Fixtures
     materials.fixtures = unitCostDatabase.materials.fixtures[materialQuantities.fixtures.type] * 
@@ -516,7 +593,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       materialQuantities.tilesMarble.area;
     
     // Miscellaneous (calculated as 2% of total material cost)
-    const subtotal = Object.values(materials).reduce((sum, cost) => sum + (cost as number), 0);
+    const subtotal = Object.values(materials).reduce((sum, cost) => sum + (cost || 0), 0);
     materials.miscellaneous = subtotal * 0.02;
     
     return materials;
@@ -561,12 +638,22 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const { overheadDetails, project } = state;
     const overhead = { ...defaultOverhead };
 
-    // Permits
-    overhead.permits = unitCostDatabase.overhead.permits[overheadDetails.permits.type][overheadDetails.permits.complexity];
+    // Permits - Fix types issue
+    const permitType = overheadDetails.permits.type;
+    const permitComplexity = overheadDetails.permits.complexity;
+    if (permitType && permitComplexity && 
+        unitCostDatabase.overhead.permits[permitType] && 
+        unitCostDatabase.overhead.permits[permitType][permitComplexity]) {
+      overhead.permits = unitCostDatabase.overhead.permits[permitType][permitComplexity];
+    }
     
-    // Design
+    // Design - Fix types issue
+    const designComplexity = overheadDetails.design.complexity;
     const revisions = Math.min(overheadDetails.design.revisions, 3);
-    overhead.design = unitCostDatabase.overhead.design[overheadDetails.design.complexity][revisions || 1];
+    if (designComplexity && unitCostDatabase.overhead.design[designComplexity] && 
+        unitCostDatabase.overhead.design[designComplexity][revisions || 1]) {
+      overhead.design = unitCostDatabase.overhead.design[designComplexity][revisions || 1];
+    }
     
     // Insurance
     overhead.insurance = unitCostDatabase.overhead.insurance[overheadDetails.insurance.coverage] * 
@@ -592,9 +679,9 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const materialCosts = calculateMaterialCosts();
     const laborCosts = calculateLaborCosts();
     
-    const materialTotal = Object.values(materialCosts).reduce((sum, cost) => sum + (cost as number), 0);
-    const laborTotal = Object.values(laborCosts).reduce((sum, cost) => sum + (cost as number), 0);
-    const overheadSubtotal = Object.values(overhead).reduce((sum, cost) => sum + (cost as number), 0);
+    const materialTotal = Object.values(materialCosts).reduce((sum, cost) => sum + (cost || 0), 0);
+    const laborTotal = Object.values(laborCosts).reduce((sum, cost) => sum + (cost || 0), 0);
+    const overheadSubtotal = Object.values(overhead).reduce((sum, cost) => sum + (cost || 0), 0);
     
     // Contingency (based on percentage of total project cost)
     overhead.contingency = (materialTotal + laborTotal + overheadSubtotal) * 
@@ -638,7 +725,10 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const potentialSavings = suggestions.reduce((total, suggestion) => total + suggestion.potentialSavings, 0);
         
         // Make sure optimized total is never negative
-        const optimizedTotal = Math.max(state.breakdown?.total as number - potentialSavings, (state.breakdown?.total as number) * 0.6);
+        const optimizedTotal = Math.max(
+          (state.breakdown?.total as number) - potentialSavings, 
+          (state.breakdown?.total as number) * 0.6
+        );
 
         const optimization = {
           suggestions,
@@ -775,8 +865,8 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         description: 'Incorporate prefabricated elements where possible to reduce the number of days required for masons. This approach can significantly reduce labor costs while potentially improving quality and consistency.',
         potentialSavings: labor.masons * 0.22,
         implementationComplexity: 'medium',
-        timeImpact: 'positive',
-        qualityImpact: 'positive'
+        timeImpact: 'minimal',
+        qualityImpact: 'minimal'
       });
     }
     
@@ -837,7 +927,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     
     // If flooring is expensive
-    if (materials.flooring > (breakdown.materials.total * 0.1) && materialQuantities.flooring.type === 'Marble') {
+    if (materials.flooring > breakdown.materials.total * 0.1 && materialQuantities.flooring.type === 'Marble') {
       suggestions.push({
         id: uuidv4(),
         category: 'materials',
@@ -867,7 +957,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // Take the top 5 suggestions by potential savings
     return suggestions.sort((a, b) => b.potentialSavings - a.potentialSavings).slice(0, 5);
   };
-
+  
   const resetEstimator = () => {
     setState({
       project: defaultProject,
@@ -883,14 +973,14 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       isOptimized: false,
       errors: {}
     });
-
+    
     toast({
       title: "Estimator reset",
-      description: "All data has been cleared.",
+      description: "All data has been cleared."
     });
   };
-
-  const formatCurrency = (value: number) => {
+  
+  const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',

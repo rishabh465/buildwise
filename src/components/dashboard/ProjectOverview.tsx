@@ -1,251 +1,159 @@
+
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useEstimator } from '@/contexts/EstimatorContext';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer
-} from 'recharts';
+import { ArrowRight } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabase';
 
-interface ProjectOverviewProps {
-  projectId: string;
-}
-
-const ProjectOverview: React.FC<ProjectOverviewProps> = ({ projectId }) => {
+const ProjectOverview: React.FC = () => {
+  const navigate = useNavigate();
   const { state, formatCurrency } = useEstimator();
-
-  // Ensure breakdown is not null before accessing its properties
-  if (!state.breakdown) {
-    return (
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Project Overview</CardTitle>
-          <CardDescription>
-            A summary of your project costs will appear here once the estimate is calculated.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>No data available. Please calculate the estimate first.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const { breakdown, optimization, project } = state;
-
-  // Data for Cost Breakdown Pie Chart
-  const pieChartData = [
-    { name: 'Materials', value: breakdown.materials.total },
-    { name: 'Labor', value: breakdown.labor.total },
-    { name: 'Overhead', value: breakdown.overhead.total },
-  ];
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
-
-  const RADIAN = Math.PI / 180;
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    return (
-      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
+  const { toast } = useToast();
+  
+  const handleOptimize = () => {
+    navigate('/optimize');
   };
-
-  // Data for Cost Trend Bar Chart (Dummy Data - Replace with actual data if available)
-  const barChartData = [
-    { name: 'Jan', materials: 2400, labor: 1398, overhead: 2210 },
-    { name: 'Feb', materials: 2210, labor: 2900, overhead: 2210 },
-    { name: 'Mar', materials: 2290, labor: 4800, overhead: 2210 },
-    { name: 'Apr', materials: 2000, labor: 3908, overhead: 2210 },
-    { name: 'May', materials: 2181, labor: 4800, overhead: 2210 },
-    { name: 'Jun', materials: 2500, labor: 4300, overhead: 2210 },
-    { name: 'Jul', materials: 2100, labor: 1398, overhead: 2210 },
-    { name: 'Aug', materials: 2900, labor: 4800, overhead: 2210 },
-    { name: 'Sep', materials: 2780, labor: 3908, overhead: 2210 },
-    { name: 'Oct', materials: 1890, labor: 4800, overhead: 2210 },
-    { name: 'Nov', materials: 2390, labor: 4300, overhead: 2210 },
-    { name: 'Dec', materials: 3490, labor: 4300, overhead: 2210 },
-  ];
-
-  // Calculate percentage values for the progress bars
-  const totalCost = breakdown.total;
-  const materialsPercentage = (breakdown.materials.total / totalCost) * 100;
-  const laborPercentage = (breakdown.labor.total / totalCost) * 100;
-  const overheadPercentage = (breakdown.overhead.total / totalCost) * 100;
-
+  
+  const handleSaveProject = async () => {
+    try {
+      if (!state.project.name) {
+        toast({
+          variant: "destructive",
+          title: "Missing project name",
+          description: "Please provide a project name before saving."
+        });
+        return;
+      }
+      
+      // Insert project details into the database
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .insert([{
+          name: state.project.name,
+          location: state.project.location,
+          construction_type: state.project.constructionType,
+          area: state.project.area,
+          floors: state.project.floors,
+          estimated_cost: state.breakdown?.total || 0
+        }])
+        .select();
+      
+      if (projectError) throw projectError;
+      
+      toast({
+        title: "Project saved",
+        description: "Your project has been saved successfully."
+      });
+      
+      if (projectData && projectData[0]) {
+        setTimeout(() => navigate(`/projects`), 1500);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive", 
+        title: "Error saving project",
+        description: error.message || "Failed to save the project"
+      });
+    }
+  };
+  
   return (
-    <div className="grid grid-cols-1 gap-6">
-      {/* Project Summary Card */}
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Project Summary</CardTitle>
-          <CardDescription>Overview of key project details and costs</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Project Details</h3>
-            <div className="space-y-1">
-              <p>
-                <strong>Name:</strong> {project.name}
-              </p>
-              <p>
-                <strong>Location:</strong> {project.location}
-              </p>
-              <p>
-                <strong>Area:</strong> {project.area} sq. ft.
-              </p>
-              <p>
-                <strong>Construction Type:</strong> {project.constructionType}
-              </p>
-            </div>
+    <Card className="mb-8 shadow-md">
+      <CardHeader>
+        <CardTitle>Project Summary</CardTitle>
+        <CardDescription>
+          Overview of project details and total cost
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Project Name</p>
+            <p className="font-medium">{state.project.name || 'Unnamed Project'}</p>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Cost Estimate</h3>
-            <div className="space-y-1">
-              <p>
-                <strong>Total Cost:</strong> {formatCurrency(breakdown.total)}
-              </p>
-              {optimization && (
-                <>
-                  <p>
-                    <strong>Optimized Cost:</strong> {formatCurrency(optimization.optimizedTotal)}
-                  </p>
-                  <p>
-                    <strong>Potential Savings:</strong> {formatCurrency(optimization.potentialSavings)}
-                  </p>
-                </>
-              )}
-            </div>
+          
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Location</p>
+            <p className="font-medium">{state.project.location || 'Not specified'}</p>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Cost Breakdown Card */}
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Cost Breakdown</CardTitle>
-          <CardDescription>Distribution of costs across different categories</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Cost Breakdown Progress Bars */}
-          <div className="space-y-4">
+          
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Construction Type</p>
+            <p className="font-medium">
+              {state.project.constructionType ? 
+                state.project.constructionType.charAt(0).toUpperCase() + state.project.constructionType.slice(1) : 
+                'Not specified'}
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Area</p>
+            <p className="font-medium">{state.project.area} sq. ft.</p>
+          </div>
+          
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Number of Floors</p>
+            <p className="font-medium">{state.project.floors}</p>
+          </div>
+        </div>
+        
+        <div className="mt-8">
+          <div className="rounded-lg bg-muted p-6 flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Materials</span>
-                <span className="text-sm text-muted-foreground">{formatCurrency(breakdown.materials.total)}</span>
-              </div>
-              <Progress value={materialsPercentage} />
+              <p className="text-sm text-muted-foreground mb-2">Total Estimated Cost</p>
+              <h2 className="text-3xl font-bold">{formatCurrency(state.breakdown?.total || 0)}</h2>
+              <p className="text-sm text-muted-foreground mt-2">Indian Rupees</p>
             </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Labor</span>
-                <span className="text-sm text-muted-foreground">{formatCurrency(breakdown.labor.total)}</span>
+            
+            <div className="grid grid-cols-3 gap-8 mt-6 md:mt-0">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Materials</p>
+                <p className="font-semibold">{formatCurrency(state.breakdown?.materials.total || 0)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {state.breakdown ? Math.round((state.breakdown.materials.total / state.breakdown.total) * 100) : 0}%
+                </p>
               </div>
-              <Progress value={laborPercentage} />
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Overhead</span>
-                <span className="text-sm text-muted-foreground">{formatCurrency(breakdown.overhead.total)}</span>
+              
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Labor</p>
+                <p className="font-semibold">{formatCurrency(state.breakdown?.labor.total || 0)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {state.breakdown ? Math.round((state.breakdown.labor.total / state.breakdown.total) * 100) : 0}%
+                </p>
               </div>
-              <Progress value={overheadPercentage} />
+              
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Overhead</p>
+                <p className="font-semibold">{formatCurrency(state.breakdown?.overhead.total || 0)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {state.breakdown ? Math.round((state.breakdown.overhead.total / state.breakdown.total) * 100) : 0}%
+                </p>
+              </div>
             </div>
           </div>
-
-          {/* Cost Breakdown Pie Chart */}
-          <div className="w-full h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart width={300} height={300}>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomizedLabel}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: any) => formatCurrency(value)} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Cost Trend Analysis Card */}
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Cost Trend Analysis</CardTitle>
-          <CardDescription>Monthly cost variations for different categories</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Cost Trend Bar Chart */}
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={barChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value: any) => formatCurrency(value)} />
-              <Tooltip formatter={(value: any) => formatCurrency(value)} />
-              <Legend />
-              <Bar dataKey="materials" name="Materials" fill="#8884d8" />
-              <Bar dataKey="labor" name="Labor" fill="#82ca9d" />
-              <Bar dataKey="overhead" name="Overhead" fill="#ffc658" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Optimization Suggestions Card (Conditionally Rendered) */}
-      {optimization && optimization.suggestions.length > 0 && (
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle>Optimization Suggestions</CardTitle>
-            <CardDescription>AI-powered suggestions to reduce project costs</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {optimization.suggestions.map((suggestion, index) => (
-              <div key={index} className="border rounded-md p-4">
-                <h4 className="text-lg font-semibold">{suggestion.title}</h4>
-                <p className="text-muted-foreground">{suggestion.description}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge variant="secondary">Category: {suggestion.category}</Badge>
-                  <Badge variant="secondary">Potential Savings: {formatCurrency(suggestion.potentialSavings)}</Badge>
-                  <Badge variant="secondary">Complexity: {suggestion.implementationComplexity}</Badge>
-                  <Badge variant="secondary">Time Impact: {suggestion.timeImpact}</Badge>
-                  <Badge variant="secondary">Quality Impact: {suggestion.qualityImpact}</Badge>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        </div>
+        
+        <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-end">
+          <Button 
+            variant="outline"
+            onClick={handleOptimize}
+            className="gap-2"
+          >
+            Cost Optimization <ArrowRight className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            onClick={handleSaveProject}
+            className="gap-2"
+          >
+            Save Project
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

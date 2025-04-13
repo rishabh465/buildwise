@@ -27,10 +27,10 @@ import {
   Search, 
   Building, 
   MoreVertical, 
-  Edit, 
   Trash2, 
   Eye, 
-  ArrowRight 
+  ArrowRight,
+  BarChart4
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { 
@@ -68,10 +68,10 @@ const Projects = () => {
     floors: 1
   });
   
-  // Redirect to login if not authenticated
+  // Fetch projects on component mount
   useEffect(() => {
     fetchProjects();
-  }, [toast]);
+  }, []);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -158,7 +158,7 @@ const Projects = () => {
       });
       
       // Navigate to the estimate page for the new project
-      navigate(`/dashboard/${data[0].id}`);
+      navigate(`/estimate/${data[0].id}`);
       
     } catch (error: any) {
       toast({
@@ -184,6 +184,10 @@ const Projects = () => {
     { value: 'commercial', label: 'Commercial Building' },
     { value: 'industrial', label: 'Industrial Building' },
     { value: 'infrastructure', label: 'Infrastructure Project' },
+    { value: 'institutional', label: 'Institutional Building' },
+    { value: 'healthcare', label: 'Healthcare Facility' },
+    { value: 'educational', label: 'Educational Institution' },
+    { value: 'hospitality', label: 'Hospitality Project' }
   ];
   
   return (
@@ -326,8 +330,16 @@ const Projects = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleViewProject(project.id)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          <span>View Details</span>
+                          <BarChart4 className="mr-2 h-4 w-4" />
+                          <span>View Dashboard</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          asChild
+                        >
+                          <Link to={`/estimate/${project.id}`} className="cursor-pointer">
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>Edit Details</span>
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive focus:text-destructive"
@@ -343,7 +355,7 @@ const Projects = () => {
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       <div className="flex flex-col">
                         <span className="text-muted-foreground">Type</span>
-                        <span>{project.construction_type || 'Not specified'}</span>
+                        <span className="capitalize">{project.construction_type || 'Not specified'}</span>
                       </div>
                       <div className="flex flex-col">
                         <span className="text-muted-foreground">Area</span>

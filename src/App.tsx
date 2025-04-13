@@ -10,7 +10,6 @@ import Index from "./pages/Index";
 import Estimate from "./pages/Estimate";
 import Dashboard from "./pages/Dashboard";
 import Optimize from "./pages/Optimize";
-import Report from "./pages/Report";
 import Auth from "./pages/Auth";
 import Projects from "./pages/Projects";
 import NotFound from "./pages/NotFound";
@@ -32,7 +31,6 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:projectId" element={<Dashboard />} />
               <Route path="/optimize" element={<Optimize />} />
-              <Route path="/report" element={<Report />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="*" element={<NotFound />} />
