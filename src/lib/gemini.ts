@@ -74,10 +74,10 @@ export const saveOptimizationsToDatabase = async (projectId: string, optimizatio
       title: opt.title,
       description: opt.description,
       category: opt.category,
-      potential_savings: opt.potential_savings,
-      implementation_complexity: opt.implementation_complexity,
-      time_impact: opt.time_impact,
-      quality_impact: opt.quality_impact
+      potential_savings: opt.potentialSavings,
+      implementation_complexity: opt.implementationComplexity,
+      time_impact: opt.timeImpact,
+      quality_impact: opt.qualityImpact
     }));
     
     const { error } = await supabase

@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CurrencySelector } from '@/components/CurrencySelector';
 import { useAuth } from '@/contexts/AuthContext';
 import { Building, LogOut, LayoutDashboard, Calculator, LineChart, FileText, FolderOpen, LogIn } from 'lucide-react';
 import {
@@ -29,10 +28,10 @@ const Navbar = () => {
   };
   
   const navItems = [
-    { path: '/dashboard', icon: <LayoutDashboard className="mr-2 h-4 w-4" />, label: 'Dashboard' },
     { path: '/estimate', icon: <Calculator className="mr-2 h-4 w-4" />, label: 'Estimate' },
     { path: '/optimize', icon: <LineChart className="mr-2 h-4 w-4" />, label: 'Optimize' },
     { path: '/report', icon: <FileText className="mr-2 h-4 w-4" />, label: 'Report' },
+    { path: '/dashboard', icon: <LayoutDashboard className="mr-2 h-4 w-4" />, label: 'Dashboard' },
     { path: '/projects', icon: <FolderOpen className="mr-2 h-4 w-4" />, label: 'Projects' }
   ];
   
@@ -64,10 +63,6 @@ const Navbar = () => {
         </nav>
         
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <div className="hidden md:block">
-            <CurrencySelector />
-          </div>
-          
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
