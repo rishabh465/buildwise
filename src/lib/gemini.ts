@@ -1,6 +1,7 @@
 
 import { supabase } from './supabase';
-import type { OptimizationSuggestion, Prediction } from './supabase';
+import type { OptimizationSuggestion as SupabaseOptimizationSuggestion, Prediction } from './supabase';
+import type { OptimizationSuggestion as EstimatorOptimizationSuggestion } from '@/types/estimator';
 
 interface ProjectData {
   project: any;
@@ -27,7 +28,7 @@ export const generatePrediction = async (projectData: ProjectData): Promise<Pred
   }
 };
 
-export const generateOptimizations = async (projectData: ProjectData): Promise<OptimizationSuggestion[] | null> => {
+export const generateOptimizations = async (projectData: ProjectData): Promise<EstimatorOptimizationSuggestion[] | null> => {
   try {
     const { data, error } = await supabase.functions.invoke('gemini-optimize', {
       body: { projectData }
@@ -37,7 +38,18 @@ export const generateOptimizations = async (projectData: ProjectData): Promise<O
       throw new Error(error.message || 'Failed to generate optimizations');
     }
     
-    return data.optimizations;
+    // Convert from Supabase format to Estimator format
+    const convertedOptimizations = data.optimizations.map((opt: SupabaseOptimizationSuggestion) => ({
+      title: opt.title,
+      description: opt.description,
+      category: opt.category,
+      potentialSavings: opt.potential_savings,
+      implementationComplexity: opt.implementation_complexity,
+      timeImpact: opt.time_impact,
+      qualityImpact: opt.quality_impact
+    }));
+    
+    return convertedOptimizations;
   } catch (error) {
     console.error('Error generating optimizations:', error);
     return null;
@@ -67,8 +79,9 @@ export const savePredictionToDatabase = async (projectId: string, prediction: Pr
   }
 };
 
-export const saveOptimizationsToDatabase = async (projectId: string, optimizations: import('@/types/estimator').OptimizationSuggestion[]): Promise<void> => {
+export const saveOptimizationsToDatabase = async (projectId: string, optimizations: EstimatorOptimizationSuggestion[]): Promise<void> => {
   try {
+    // Convert from Estimator format to Supabase format
     const optimizationsToInsert = optimizations.map(opt => ({
       project_id: projectId,
       title: opt.title,

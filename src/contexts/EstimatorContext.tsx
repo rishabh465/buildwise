@@ -420,16 +420,15 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         .eq('project_id', projectId);
         
       if (!optimizationsError && dbOptimizations && dbOptimizations.length > 0) {
-        // Transform DB optimizations to our app format
-        const suggestions: AppOptimizationSuggestion[] = dbOptimizations.map(opt => ({
-          id: opt.id,
+        // Convert from Supabase format to Estimator format
+        const suggestions: AppOptimizationSuggestion[] = dbOptimizations.map((opt: any) => ({
           title: opt.title,
           description: opt.description,
-          category: opt.category as any,
+          category: opt.category,
           potentialSavings: opt.potential_savings,
-          implementationComplexity: opt.implementation_complexity as any,
-          timeImpact: opt.time_impact as any,
-          qualityImpact: opt.quality_impact as any
+          implementationComplexity: opt.implementation_complexity,
+          timeImpact: opt.time_impact,
+          qualityImpact: opt.quality_impact
         }));
         
         const potentialSavings = suggestions.reduce((total, suggestion) => 

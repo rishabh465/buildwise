@@ -109,7 +109,6 @@ const Report = () => {
       
       // Cost summary table
       doc.autoTable({
-        startY: 90,
         head: [['Category', 'Amount']],
         body: [
           ['Materials', formatCurrency(state.breakdown.materials.total)],
@@ -117,6 +116,7 @@ const Report = () => {
           ['Overhead', formatCurrency(state.breakdown.overhead.total)],
           ['Total Project Cost', formatCurrency(state.breakdown.total)]
         ],
+        startY: 90,
         headStyles: { fillColor: [139, 92, 246] },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
@@ -133,9 +133,9 @@ const Report = () => {
         doc.text('Material Cost Breakdown', 20, 20);
         
         doc.autoTable({
-          startY: 25,
           head: [['Material', 'Cost']],
           body: materialItems,
+          startY: 25,
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
@@ -160,9 +160,9 @@ const Report = () => {
         doc.text('Labor Cost Breakdown', 20, newY);
         
         doc.autoTable({
-          startY: newY + 5,
           head: [['Labor Category', 'Cost']],
           body: laborItems,
+          startY: newY + 5,
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
@@ -187,9 +187,9 @@ const Report = () => {
         doc.text('Overhead Cost Breakdown', 20, newY);
         
         doc.autoTable({
-          startY: newY + 5,
           head: [['Overhead Category', 'Cost']],
           body: overheadItems,
+          startY: newY + 5,
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
@@ -222,9 +222,9 @@ const Report = () => {
         ]);
         
         doc.autoTable({
-          startY: 70,
           head: [['Recommendation', 'Category', 'Potential Savings', 'Complexity']],
           body: suggestionRows,
+          startY: 70,
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
