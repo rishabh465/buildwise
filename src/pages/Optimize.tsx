@@ -25,7 +25,8 @@ import {
   ArrowRight,
   CheckCircle,
   AlertCircle,
-  Clock
+  Clock,
+  RefreshCcw
 } from 'lucide-react';
 
 const ComplexityBadge = ({ complexity }: { complexity: string }) => {
@@ -88,6 +89,7 @@ const Optimize = () => {
   const { state, formatCurrency, generateOptimization } = useEstimator();
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   useEffect(() => {
     // Redirect if no cost breakdown
@@ -102,14 +104,40 @@ const Optimize = () => {
     }
     
     // Generate optimization if not already done
-    if (!state.isOptimized && !loading) {
-      setLoading(true);
-      setTimeout(() => {
-        generateOptimization();
-        setLoading(false);
-      }, 1500); // Simulated delay to show loading state
+    if (!state.isOptimized && !loading && !error) {
+      handleGenerateOptimization();
     }
-  }, [state.breakdown, state.isOptimized, navigate, toast, generateOptimization]);
+  }, [state.breakdown, state.isOptimized, navigate, toast]);
+
+  const handleGenerateOptimization = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      toast({
+        title: "Generating optimizations",
+        description: "Analyzing your project data to find cost-saving opportunities...",
+      });
+      
+      await generateOptimization();
+      
+      toast({
+        title: "Optimization complete",
+        description: "Cost-saving opportunities have been identified for your project.",
+      });
+    } catch (err: any) {
+      console.error("Failed to generate optimizations:", err);
+      setError(err?.message || "Failed to generate optimization suggestions");
+      
+      toast({
+        variant: "destructive",
+        title: "Optimization Failed",
+        description: "Could not generate optimization suggestions. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!state.breakdown) {
     return null; // Don't render if no breakdown data
@@ -149,8 +177,37 @@ const Optimize = () => {
             </div>
           )}
           
+          {/* Error State */}
+          {!loading && error && (
+            <Card className="mb-8 shadow-md">
+              <CardHeader>
+                <CardTitle className="text-destructive flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5" /> Failed to Generate Optimizations
+                </CardTitle>
+                <CardDescription>
+                  We encountered an error while trying to generate optimization suggestions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-destructive/10 p-4 rounded-lg mb-6">
+                  <p className="text-sm text-destructive">
+                    {error}
+                  </p>
+                </div>
+                
+                <p className="mb-6">
+                  Don't worry! You can try again or continue with the cost breakdown you already have.
+                </p>
+                
+                <Button onClick={handleGenerateOptimization} className="gap-2">
+                  <RefreshCcw className="h-4 w-4" /> Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+          
           {/* Optimization Results */}
-          {!loading && state.optimization && (
+          {!loading && !error && state.optimization && (
             <>
               {/* Summary Card */}
               <Card className="mb-8 shadow-md">
