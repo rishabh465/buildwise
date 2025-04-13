@@ -92,3 +92,11 @@ export const saveOptimizationsToDatabase = async (projectId: string, optimizatio
     throw error;
   }
 };
+
+// Calculate safe optimized total to ensure it never goes negative
+export const calculateSafeOptimizedTotal = (originalTotal: number, potentialSavings: number): number => {
+  // Ensure savings cannot exceed 75% of the original cost
+  const maxAllowedSavings = originalTotal * 0.75;
+  const safeSavings = Math.min(potentialSavings, maxAllowedSavings);
+  return Math.max(originalTotal - safeSavings, originalTotal * 0.25);
+};
