@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -78,8 +77,41 @@ const DetailedCostBreakdown: React.FC = () => {
       percentage: ((value as number) / state.breakdown.overhead.total) * 100
     }));
   
+  // Custom Tooltip for better visibility
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border p-2 rounded shadow-lg">
+          <p className="label font-bold">{`${label}`}</p>
+          <p className="intro" style={{ color: payload[0].payload.fill }}>
+            {`${payload[0].name}: ${formatCurrency(payload[0].value)} (${payload[0].payload.percentage.toFixed(1)}%)`}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom label for Pie chart to prevent overlap
+  const RADIAN = Math.PI / 180;
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const percentage = (percent * 100).toFixed(0);
+
+    // Only show label if percentage is significant enough to avoid clutter
+    if (percent < 0.05) return null; 
+
+    return (
+      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12}>
+        {`${name} (${percentage}%)`}
+      </text>
+    );
+  };
+
   return (
-    <Card className="shadow-md">
+    <Card className="shadow-md mt-8">
       <CardHeader>
         <CardTitle>Detailed Cost Breakdown</CardTitle>
         <CardDescription>
@@ -95,256 +127,177 @@ const DetailedCostBreakdown: React.FC = () => {
           </TabsList>
           
           <TabsContent value="materials">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="overflow-auto max-h-[400px]">
-                <table className="w-full border-collapse">
-                  <thead className="sticky top-0 bg-background">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              <div className="overflow-auto max-h-[450px]">
+                <table className="w-full border-collapse text-sm">
+                  <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b">
-                      <th className="text-left p-3">Material</th>
-                      <th className="text-right p-3">Cost</th>
-                      <th className="text-right p-3">Percentage</th>
+                      <th className="text-left p-2 font-semibold">Material</th>
+                      <th className="text-right p-2 font-semibold">Cost</th>
+                      <th className="text-right p-2 font-semibold">% of Materials</th>
                     </tr>
                   </thead>
                   <tbody>
                     {materialsData.map((item) => (
                       <tr key={item.name} className="border-b hover:bg-muted/50">
-                        <td className="p-3 capitalize">{item.name}</td>
-                        <td className="p-3 text-right">{formatCurrency(item.value as number)}</td>
-                        <td className="p-3 text-right">
+                        <td className="p-2 capitalize">{item.name}</td>
+                        <td className="p-2 text-right">{formatCurrency(item.value as number)}</td>
+                        <td className="p-2 text-right">
                           {item.percentage.toFixed(1)}%
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="sticky bottom-0 bg-background">
-                    <tr className="font-bold">
-                      <td className="p-3">Total</td>
-                      <td className="p-3 text-right">{formatCurrency(state.breakdown.materials.total)}</td>
-                      <td className="p-3 text-right">100%</td>
+                  <tfoot className="sticky bottom-0 bg-background font-semibold">
+                    <tr className="border-t-2">
+                      <td className="p-2">Total</td>
+                      <td className="p-2 text-right">{formatCurrency(state.breakdown.materials.total)}</td>
+                      <td className="p-2 text-right">100%</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
               
-              {/* Multiple visualization options */}
-              <div className="space-y-8">
-                <div className="h-[300px]">
-                  <h4 className="font-medium mb-2 text-center">Material Costs Distribution</h4>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={materialsData.slice(0, 5)}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {materialsData.slice(0, 5).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="h-[300px]">
-                  <h4 className="font-medium mb-2 text-center">Top Material Costs</h4>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={materialsData.slice(0, 5)}
-                      layout="vertical"
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 60,
-                        bottom: 5,
-                      }}
+              <div className="h-[450px]">
+                <h4 className="font-medium mb-4 text-center">Material Costs Distribution</h4>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={materialsData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius="80%"
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={renderCustomizedLabel}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis type="category" dataKey="name" width={80} />
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Bar dataKey="value" name="Cost">
-                        {materialsData.slice(0, 5).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                      {materialsData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend layout="vertical" verticalAlign="middle" align="right" />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </TabsContent>
           
           <TabsContent value="labor">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="overflow-auto max-h-[400px]">
-                <table className="w-full border-collapse">
-                  <thead className="sticky top-0 bg-background">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              <div className="overflow-auto max-h-[450px]">
+                <table className="w-full border-collapse text-sm">
+                  <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b">
-                      <th className="text-left p-3">Labor Type</th>
-                      <th className="text-right p-3">Cost</th>
-                      <th className="text-right p-3">Percentage</th>
+                      <th className="text-left p-2 font-semibold">Labor Type</th>
+                      <th className="text-right p-2 font-semibold">Cost</th>
+                      <th className="text-right p-2 font-semibold">% of Labor</th>
                     </tr>
                   </thead>
                   <tbody>
                     {laborData.map((item) => (
                       <tr key={item.name} className="border-b hover:bg-muted/50">
-                        <td className="p-3 capitalize">{item.name}</td>
-                        <td className="p-3 text-right">{formatCurrency(item.value as number)}</td>
-                        <td className="p-3 text-right">
+                        <td className="p-2 capitalize">{item.name}</td>
+                        <td className="p-2 text-right">{formatCurrency(item.value as number)}</td>
+                        <td className="p-2 text-right">
                           {item.percentage.toFixed(1)}%
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="sticky bottom-0 bg-background">
-                    <tr className="font-bold">
-                      <td className="p-3">Total</td>
-                      <td className="p-3 text-right">{formatCurrency(state.breakdown.labor.total)}</td>
-                      <td className="p-3 text-right">100%</td>
+                  <tfoot className="sticky bottom-0 bg-background font-semibold">
+                    <tr className="border-t-2">
+                      <td className="p-2">Total</td>
+                      <td className="p-2 text-right">{formatCurrency(state.breakdown.labor.total)}</td>
+                      <td className="p-2 text-right">100%</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
               
-              <div className="space-y-8">
-                <div className="h-[300px]">
-                  <h4 className="font-medium mb-2 text-center">Labor Cost Profile</h4>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart outerRadius={90} data={laborData}>
-                      <PolarGrid />
-                      <PolarAngleAxis dataKey="name" />
-                      <PolarRadiusAxis angle={30} domain={[0, 'auto']} />
-                      <Radar name="Labor Cost" dataKey="value" stroke="#FF6B6B" fill="#FF6B6B" fillOpacity={0.6} />
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="h-[300px]">
-                  <h4 className="font-medium mb-2 text-center">Labor Cost Comparison</h4>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={laborData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Legend />
-                      <Line type="monotone" dataKey="value" stroke="#4ECDC4" activeDot={{ r: 8 }} strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+              <div className="h-[450px]">
+                <h4 className="font-medium mb-4 text-center">Labor Cost Comparison</h4>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={laborData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 70 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
+                    <YAxis tickFormatter={formatCurrency} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Line type="monotone" dataKey="value" name="Cost" stroke="#4ECDC4" activeDot={{ r: 8 }} strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </TabsContent>
           
           <TabsContent value="overhead">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="overflow-auto max-h-[400px]">
-                <table className="w-full border-collapse">
-                  <thead className="sticky top-0 bg-background">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              <div className="overflow-auto max-h-[450px]">
+                <table className="w-full border-collapse text-sm">
+                  <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b">
-                      <th className="text-left p-3">Overhead Type</th>
-                      <th className="text-right p-3">Cost</th>
-                      <th className="text-right p-3">Percentage</th>
+                      <th className="text-left p-2 font-semibold">Overhead Item</th>
+                      <th className="text-right p-2 font-semibold">Cost</th>
+                      <th className="text-right p-2 font-semibold">% of Overhead</th>
                     </tr>
                   </thead>
                   <tbody>
                     {overheadData.map((item) => (
                       <tr key={item.name} className="border-b hover:bg-muted/50">
-                        <td className="p-3 capitalize">{item.name}</td>
-                        <td className="p-3 text-right">{formatCurrency(item.value as number)}</td>
-                        <td className="p-3 text-right">
+                        <td className="p-2 capitalize">{item.name}</td>
+                        <td className="p-2 text-right">{formatCurrency(item.value as number)}</td>
+                        <td className="p-2 text-right">
                           {item.percentage.toFixed(1)}%
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="sticky bottom-0 bg-background">
-                    <tr className="font-bold">
-                      <td className="p-3">Total</td>
-                      <td className="p-3 text-right">{formatCurrency(state.breakdown.overhead.total)}</td>
-                      <td className="p-3 text-right">100%</td>
+                  <tfoot className="sticky bottom-0 bg-background font-semibold">
+                    <tr className="border-t-2">
+                      <td className="p-2">Total</td>
+                      <td className="p-2 text-right">{formatCurrency(state.breakdown.overhead.total)}</td>
+                      <td className="p-2 text-right">100%</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
               
-              <div className="space-y-8">
-                <div className="h-[300px]">
-                  <h4 className="font-medium mb-2 text-center">Major Overhead Costs</h4>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={overheadData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Bar dataKey="value" name="Cost">
-                        {overheadData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[(index + 10) % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="h-[300px]">
-                  <h4 className="font-medium mb-2 text-center">Overhead Proportion</h4>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={overheadData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {overheadData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[(index + 10) % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+              <div className="h-[450px]">
+                <h4 className="font-medium mb-4 text-center">Top Overhead Costs</h4>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={overheadData}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" tickFormatter={formatCurrency} />
+                    <YAxis type="category" dataKey="name" width={100} interval={0} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" name="Cost">
+                      {overheadData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[(index + 10) % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter>
-        <Button 
-          onClick={handleOptimize} 
-          className="w-full gap-2"
-        >
-          Generate Cost Optimization Suggestions <ArrowRight className="h-4 w-4" />
-        </Button>
-      </CardFooter>
+      {state.isCalculated && !state.isOptimized && (
+        <CardFooter className="justify-end border-t pt-4">
+          <Button onClick={handleOptimize} className="gap-2">
+            Optimize Costs <ArrowRight className="h-4 w-4" />
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };

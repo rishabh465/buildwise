@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -129,11 +128,6 @@ const Optimize = () => {
               </p>
             </div>
             
-            <Button asChild variant="outline" className="gap-2">
-              <a href="/report">
-                <FileDown className="h-4 w-4" /> Download Report
-              </a>
-            </Button>
           </div>
           
           {/* Loading State */}
@@ -142,7 +136,7 @@ const Optimize = () => {
               <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
               <h3 className="text-xl font-semibold mb-2">Generating Optimization Suggestions</h3>
               <p className="text-muted-foreground text-center max-w-md mb-4">
-                Our AI is analyzing your project details to identify potential cost savings without compromising quality.
+                Our AI is analyzing your project details to identify potential cost savings without compromising quality or timeline.
               </p>
               <Progress value={60} className="w-64 mb-2" />
               <p className="text-sm text-muted-foreground">This may take a moment...</p>
@@ -368,11 +362,7 @@ const Optimize = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild variant="default" className="w-full gap-2">
-                    <a href="/report">
-                      Generate Detailed Report <ArrowRight className="h-4 w-4" />
-                    </a>
-                  </Button>
+
                 </CardFooter>
               </Card>
             </>

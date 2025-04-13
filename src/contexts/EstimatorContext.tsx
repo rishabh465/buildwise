@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,7 +15,7 @@ import {
   OptimizationSuggestion
 } from '@/types/estimator';
 
-// Default values
+// Default values - Updated with more specific defaults
 const defaultProject: ProjectDetails = {
   name: '',
   location: '',
@@ -27,22 +26,21 @@ const defaultProject: ProjectDetails = {
 };
 
 const defaultMaterialQuantities: MaterialQuantities = {
-  sand: { type: 'Fine', amount: 0 },
+  sand: { type: 'River', amount: 0 }, // Changed default
   cement: { type: 'OPC 43 Grade', amount: 0 },
   aggregate: { type: '20mm', amount: 0 },
   steel: { type: 'TMT Bars', amount: 0 },
-  bricks: { type: 'Red Clay', amount: 0 },
+  bricks: { type: 'Fly Ash', amount: 0 }, // Changed default
   wood: { type: 'Pine', amount: 0 },
   paint: { type: 'Emulsion', amount: 0 },
-  electrical: { components: 'Basic', complexity: 'Low' },
-  plumbing: { components: 'Basic', complexity: 'Low' },
-  fixtures: { type: 'Standard', count: 0 },
-  windows: { type: 'Wooden', count: 0 },
-  doors: { type: 'Wooden', count: 0 },
+  electrical: { components: 'PVC Conduits', complexity: 'Standard Wiring' }, // Updated
+  plumbing: { components: 'CPVC Pipes', complexity: 'Standard Layout' }, // Updated
+  fixtures: { type: 'Mid-Range', count: 0 }, // Updated
+  windows: { type: 'Aluminum', count: 0 }, // Changed default
+  doors: { type: 'Flush', count: 0 }, // Changed default
   roofing: { type: 'RCC', area: 0 },
-  flooring: { type: 'Ceramic Tiles', area: 0 },
+  flooring: { type: 'Vitrified Tiles', area: 0 }, // Changed default
   glasswork: { type: 'Plain', area: 0 },
-  tilesMarble: { type: 'Ceramic', area: 0 },
 };
 
 const defaultLaborDetails: LaborDetails = {
@@ -52,18 +50,15 @@ const defaultLaborDetails: LaborDetails = {
   electricians: { count: 0, days: 0 },
   plumbers: { count: 0, days: 0 },
   helpers: { count: 0, days: 0 },
-  supervisors: { count: 0, days: 0 }
 };
 
 const defaultOverheadDetails: OverheadDetails = {
-  permits: { type: 'Basic', complexity: 'Low' },
-  design: { complexity: 'Low', revisions: 0 },
-  insurance: { coverage: 'Basic', duration: 0 },
-  equipment: { type: 'Basic', duration: 0 },
+  permits: { type: 'Residential', complexity: 'Standard Review' }, // Updated
+  insurance: { coverage: 'Builder\'s Risk', duration: 0 }, // Updated & Escaped quote
+  equipment: { type: 'Standard Tools', duration: 0 }, // Updated
   transportation: { distance: 0, frequency: 0 },
-  utilities: { type: 'Basic', duration: 0 },
-  sitePreparation: { complexity: 'Low', area: 0 },
-  contingency: { percentage: 5 }
+  utilities: { type: 'Standard Usage', duration: 0 }, // Updated
+  sitePreparation: { complexity: 'Minor Clearing', area: 0 }, // Updated
 };
 
 const defaultMaterials: MaterialCosts = {
@@ -82,7 +77,6 @@ const defaultMaterials: MaterialCosts = {
   roofing: 0,
   flooring: 0,
   glasswork: 0,
-  tilesMarble: 0,
   miscellaneous: 0
 };
 
@@ -93,21 +87,18 @@ const defaultLabor: LaborCosts = {
   electricians: 0,
   plumbers: 0,
   helpers: 0,
-  supervisors: 0
 };
 
 const defaultOverhead: OverheadCosts = {
   permits: 0,
-  design: 0,
   insurance: 0,
   equipment: 0,
   transportation: 0,
   utilities: 0,
   sitePreparation: 0,
-  contingency: 0
 };
 
-// Dummy cost database - in a real application this would come from a backend
+// Updated Unit Cost Database with specific keys
 const unitCostDatabase: UnitCostDatabase = {
   materials: {
     sand: {
@@ -166,54 +157,22 @@ const unitCostDatabase: UnitCostDatabase = {
       'Luxury': 550,
       'Anti-fungal': 380
     },
-    electrical: {
-      'Basic': {
-        'Low': 15000,
-        'Medium': 25000,
-        'High': 40000
-      },
-      'Standard': {
-        'Low': 30000,
-        'Medium': 45000,
-        'High': 65000
-      },
-      'Premium': {
-        'Low': 60000,
-        'Medium': 85000,
-        'High': 120000
-      },
-      'Smart': {
-        'Low': 80000,
-        'Medium': 120000,
-        'High': 180000
-      }
+    electrical: { // Updated keys
+      'PVC Conduits': { 'Standard Wiring': 15000, 'Complex Wiring': 25000, 'Industrial Grade': 40000 },
+      'Metal Conduits': { 'Standard Wiring': 30000, 'Complex Wiring': 45000, 'Industrial Grade': 65000 },
+      'High Spec': { 'Standard Wiring': 60000, 'Complex Wiring': 85000, 'Industrial Grade': 120000 },
+      'Smart Home': { 'Standard Wiring': 80000, 'Complex Wiring': 120000, 'Industrial Grade': 180000 }
     },
-    plumbing: {
-      'Basic': {
-        'Low': 18000,
-        'Medium': 30000,
-        'High': 45000
-      },
-      'Standard': {
-        'Low': 40000,
-        'Medium': 55000,
-        'High': 75000
-      },
-      'Premium': {
-        'Low': 70000,
-        'Medium': 95000,
-        'High': 130000
-      },
-      'Luxury': {
-        'Low': 100000,
-        'Medium': 135000,
-        'High': 180000
-      }
+    plumbing: { // Updated keys
+      'PVC Pipes': { 'Standard Layout': 18000, 'Complex Layout': 30000, 'Multi-Story': 45000 },
+      'CPVC Pipes': { 'Standard Layout': 40000, 'Complex Layout': 55000, 'Multi-Story': 75000 },
+      'Copper Pipes': { 'Standard Layout': 70000, 'Complex Layout': 95000, 'Multi-Story': 130000 },
+      'PEX Tubing': { 'Standard Layout': 100000, 'Complex Layout': 135000, 'Multi-Story': 180000 }
     },
-    fixtures: {
-      'Basic': 2000,
-      'Standard': 3500,
-      'Premium': 7000,
+    fixtures: { // Updated keys
+      'Basic': 2000, // Kept Basic as an option
+      'Mid-Range': 3500,
+      'High-End': 7000,
       'Luxury': 12000,
       'Designer': 18000
     },
@@ -260,16 +219,6 @@ const unitCostDatabase: UnitCostDatabase = {
       'Insulated': 2200,
       'Smart Glass': 4500
     },
-    tilesMarble: {
-      'Ceramic': 850,
-      'Vitrified': 1200,
-      'Marble': 2500,
-      'Granite': 2200,
-      'Travertine': 2100,
-      'Slate': 1800,
-      'Onyx': 3800,
-      'Limestone': 1600
-    },
   },
   labor: {
     mason: 800,
@@ -278,74 +227,52 @@ const unitCostDatabase: UnitCostDatabase = {
     electrician: 1000,
     plumber: 1000,
     helper: 500,
-    supervisor: 1500
   },
   overhead: {
-    permits: {
-      'Basic': {
-        'Low': 15000,
-        'Medium': 25000,
-        'High': 40000
-      },
-      'Complex': {
-        'Low': 35000,
-        'Medium': 50000,
-        'High': 80000
-      },
-      'Industrial': {
-        'Low': 50000,
-        'Medium': 75000,
-        'High': 100000
-      }
+    permits: { // Updated keys
+      'Residential': { 'Standard Review': 15000, 'Detailed Scrutiny': 25000, 'Complex Zoning': 40000 },
+      'Commercial': { 'Standard Review': 35000, 'Detailed Scrutiny': 50000, 'Complex Zoning': 80000 },
+      'Industrial/Special': { 'Standard Review': 50000, 'Detailed Scrutiny': 75000, 'Complex Zoning': 100000 }
     },
-    design: {
-      'Low': {
-        1: 30000,
-        2: 40000,
-        3: 50000
-      },
-      'Medium': {
-        1: 60000,
-        2: 75000,
-        3: 90000
-      },
-      'High': {
-        1: 100000,
-        2: 120000,
-        3: 150000
-      },
-      'Premium': {
-        1: 180000,
-        2: 220000,
-        3: 280000
-      }
+    insurance: { // Updated keys
+      'Contractor Liability': 250,
+      'Builder\'s Risk': 400, // Escaped quote
+      'All Risk Policy': 600,
+      'Premium Coverage': 900
     },
-    insurance: {
-      'Basic': 250,
-      'Standard': 400,
-      'Comprehensive': 600,
-      'Premium': 900
+    equipment: { // Updated keys
+      'Hand Tools/Light': 1000,
+      'Standard Construction': 2000,
+      'Heavy Machinery': 5000,
+      'Specialized Gear': 8000
     },
-    equipment: {
-      'Basic': 1000,
-      'Standard': 2000,
-      'Heavy': 5000,
-      'Specialized': 8000
+    utilities: { // Updated keys
+      'Temporary Site': 30,
+      'Standard Usage': 50,
+      'High Demand': 80,
+      'Industrial Needs': 150
     },
-    utilities: {
-      'Basic': 30,
-      'Standard': 50,
-      'High': 80,
-      'Industrial': 150
-    },
-    sitePreparation: {
-      'Low': 75,
-      'Medium': 150,
-      'High': 300,
-      'Complex': 500
+    sitePreparation: { // Updated keys
+      'Minor Clearing': 75,
+      'Grading Needed': 150,
+      'Significant Earthwork': 300,
+      'Complex Terrain': 500
     }
   },
 };
+
+// Helper functions to get new options (used internally)
+const electricalComponentOptions = () => Object.keys(unitCostDatabase.materials.electrical);
+const electricalComplexityOptions = () => Object.keys(unitCostDatabase.materials.electrical['PVC Conduits']); 
+const plumbingComponentOptions = () => Object.keys(unitCostDatabase.materials.plumbing);
+const plumbingComplexityOptions = () => Object.keys(unitCostDatabase.materials.plumbing['CPVC Pipes']);
+const fixtureOptions = () => Object.keys(unitCostDatabase.materials.fixtures);
+const permitTypeOptions = () => Object.keys(unitCostDatabase.overhead.permits);
+const permitComplexityOptions = () => Object.keys(unitCostDatabase.overhead.permits['Residential']);
+const insuranceCoverageOptions = () => Object.keys(unitCostDatabase.overhead.insurance);
+const equipmentTypeOptions = () => Object.keys(unitCostDatabase.overhead.equipment);
+const utilityTypeOptions = () => Object.keys(unitCostDatabase.overhead.utilities);
+const sitePreparationComplexityOptions = () => Object.keys(unitCostDatabase.overhead.sitePreparation);
 
 interface EstimatorContextType {
   state: EstimatorState;
@@ -359,6 +286,7 @@ interface EstimatorContextType {
   formatCurrency: (value: number) => string;
   getMaterialOptions: (material: string) => string[];
   getComplexityOptions: () => string[];
+  downloadReportAsTxt: () => void;
 }
 
 const EstimatorContext = createContext<EstimatorContextType | undefined>(undefined);
@@ -417,15 +345,23 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   };
 
-  const getMaterialOptions = (material: string): string[] => {
-    if (material in unitCostDatabase.materials) {
-      return Object.keys(unitCostDatabase.materials[material as keyof typeof unitCostDatabase.materials]);
-    }
-    return [];
+  const getMaterialOptions = (material: string): string[] => { 
+      // This function might still be useful for materials not covered by specific helpers
+      // e.g., sand, cement, aggregate, steel, bricks, wood, paint, windows, doors, roofing, flooring, glasswork
+      if (material in unitCostDatabase.materials) {
+          const categoryData = unitCostDatabase.materials[material as keyof typeof unitCostDatabase.materials];
+          // Ensure categoryData is treated as a simple key-value map for these cases
+          if (typeof categoryData === 'object' && categoryData !== null && !Object.values(categoryData).some(val => typeof val === 'object')) {
+              return Object.keys(categoryData);
+          }
+      }
+      return []; // Return empty if not a simple material type or not found
   };
 
-  const getComplexityOptions = (): string[] => {
-    return ['Low', 'Medium', 'High'];
+  const getComplexityOptions = (): string[] => { 
+      // This is now less useful as complexities are specific per category
+      // Returning a generic list might be confusing. Consider removing or making specific.
+      return []; // Return empty or a default/error list
   };
 
   const calculateCosts = () => {
@@ -518,79 +454,81 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const { materialQuantities } = state;
     const materials = { ...defaultMaterials };
 
-    // Sand
-    materials.sand = unitCostDatabase.materials.sand[materialQuantities.sand.type] * 
-      materialQuantities.sand.amount;
+    // Use simple lookups for materials like sand, cement, fixtures, etc.
+    // Need to ensure the type assertion handles both simple and nested lookups correctly
+    // or use type guards.
+
+    // Example for a simple lookup (Sand)
+    const sandUnitCost = (unitCostDatabase.materials.sand as { [key: string]: number })[materialQuantities.sand.type];
+    materials.sand = (sandUnitCost || 0) * materialQuantities.sand.amount;
+
+    // Example for a simple lookup (Cement)
+    const cementUnitCost = (unitCostDatabase.materials.cement as { [key: string]: number })[materialQuantities.cement.type];
+    materials.cement = (cementUnitCost || 0) * materialQuantities.cement.amount;
     
-    // Cement
-    materials.cement = unitCostDatabase.materials.cement[materialQuantities.cement.type] * 
-      materialQuantities.cement.amount;
-    
-    // Aggregate
-    materials.aggregate = unitCostDatabase.materials.aggregate[materialQuantities.aggregate.type] * 
-      materialQuantities.aggregate.amount;
-    
-    // Steel
-    materials.steel = unitCostDatabase.materials.steel[materialQuantities.steel.type] * 
-      materialQuantities.steel.amount;
-    
-    // Bricks
-    materials.bricks = unitCostDatabase.materials.bricks[materialQuantities.bricks.type] * 
-      materialQuantities.bricks.amount;
-    
-    // Wood
-    materials.wood = unitCostDatabase.materials.wood[materialQuantities.wood.type] * 
-      materialQuantities.wood.amount;
-    
-    // Paint
-    materials.paint = unitCostDatabase.materials.paint[materialQuantities.paint.type] * 
-      materialQuantities.paint.amount;
-    
-    // Electrical - Fix types issue
+    // ... (Repeat for Aggregate, Steel, Bricks, Wood, Paint) ...
+    const aggregateUnitCost = (unitCostDatabase.materials.aggregate as { [key: string]: number })[materialQuantities.aggregate.type];
+    materials.aggregate = (aggregateUnitCost || 0) * materialQuantities.aggregate.amount;
+
+    const steelUnitCost = (unitCostDatabase.materials.steel as { [key: string]: number })[materialQuantities.steel.type];
+    materials.steel = (steelUnitCost || 0) * materialQuantities.steel.amount;
+
+    const bricksUnitCost = (unitCostDatabase.materials.bricks as { [key: string]: number })[materialQuantities.bricks.type];
+    materials.bricks = (bricksUnitCost || 0) * materialQuantities.bricks.amount;
+
+    const woodUnitCost = (unitCostDatabase.materials.wood as { [key: string]: number })[materialQuantities.wood.type];
+    materials.wood = (woodUnitCost || 0) * materialQuantities.wood.amount;
+
+    const paintUnitCost = (unitCostDatabase.materials.paint as { [key: string]: number })[materialQuantities.paint.type];
+    materials.paint = (paintUnitCost || 0) * materialQuantities.paint.amount;
+
+    // Electrical - Use nested lookup
     const electricalComponents = materialQuantities.electrical.components;
     const electricalComplexity = materialQuantities.electrical.complexity;
+    const electricalCostMap = unitCostDatabase.materials.electrical as { [key: string]: { [key: string]: number } };
     if (electricalComponents && electricalComplexity && 
-        unitCostDatabase.materials.electrical[electricalComponents] && 
-        unitCostDatabase.materials.electrical[electricalComponents][electricalComplexity]) {
-      materials.electrical = unitCostDatabase.materials.electrical[electricalComponents][electricalComplexity];
+        electricalCostMap[electricalComponents] && 
+        electricalCostMap[electricalComponents][electricalComplexity]) {
+      materials.electrical = electricalCostMap[electricalComponents][electricalComplexity];
+    } else {
+      materials.electrical = 0; // Default to 0 if options are invalid
     }
     
-    // Plumbing - Fix types issue
+    // Plumbing - Use nested lookup
     const plumbingComponents = materialQuantities.plumbing.components;
     const plumbingComplexity = materialQuantities.plumbing.complexity;
+    const plumbingCostMap = unitCostDatabase.materials.plumbing as { [key: string]: { [key: string]: number } };
     if (plumbingComponents && plumbingComplexity && 
-        unitCostDatabase.materials.plumbing[plumbingComponents] && 
-        unitCostDatabase.materials.plumbing[plumbingComponents][plumbingComplexity]) {
-      materials.plumbing = unitCostDatabase.materials.plumbing[plumbingComponents][plumbingComplexity];
+        plumbingCostMap[plumbingComponents] && 
+        plumbingCostMap[plumbingComponents][plumbingComplexity]) {
+      materials.plumbing = plumbingCostMap[plumbingComponents][plumbingComplexity];
+    } else {
+        materials.plumbing = 0;
     }
     
-    // Fixtures
-    materials.fixtures = unitCostDatabase.materials.fixtures[materialQuantities.fixtures.type] * 
-      materialQuantities.fixtures.count;
+    // Fixtures - Simple lookup
+    const fixturesUnitCost = (unitCostDatabase.materials.fixtures as { [key: string]: number })[materialQuantities.fixtures.type];
+    materials.fixtures = (fixturesUnitCost || 0) * materialQuantities.fixtures.count;
     
-    // Windows
-    materials.windows = unitCostDatabase.materials.windows[materialQuantities.windows.type] * 
-      materialQuantities.windows.count;
+    // Windows - Simple lookup
+    const windowsUnitCost = (unitCostDatabase.materials.windows as { [key: string]: number })[materialQuantities.windows.type];
+    materials.windows = (windowsUnitCost || 0) * materialQuantities.windows.count;
     
-    // Doors
-    materials.doors = unitCostDatabase.materials.doors[materialQuantities.doors.type] * 
-      materialQuantities.doors.count;
+    // Doors - Simple lookup
+    const doorsUnitCost = (unitCostDatabase.materials.doors as { [key: string]: number })[materialQuantities.doors.type];
+    materials.doors = (doorsUnitCost || 0) * materialQuantities.doors.count;
     
-    // Roofing
-    materials.roofing = unitCostDatabase.materials.roofing[materialQuantities.roofing.type] * 
-      materialQuantities.roofing.area;
+    // Roofing - Simple lookup
+    const roofingUnitCost = (unitCostDatabase.materials.roofing as { [key: string]: number })[materialQuantities.roofing.type];
+    materials.roofing = (roofingUnitCost || 0) * materialQuantities.roofing.area;
     
-    // Flooring
-    materials.flooring = unitCostDatabase.materials.flooring[materialQuantities.flooring.type] * 
-      materialQuantities.flooring.area;
+    // Flooring - Simple lookup
+    const flooringUnitCost = (unitCostDatabase.materials.flooring as { [key: string]: number })[materialQuantities.flooring.type];
+    materials.flooring = (flooringUnitCost || 0) * materialQuantities.flooring.area;
     
-    // Glasswork
-    materials.glasswork = unitCostDatabase.materials.glasswork[materialQuantities.glasswork.type] * 
-      materialQuantities.glasswork.area;
-    
-    // Tiles/Marble
-    materials.tilesMarble = unitCostDatabase.materials.tilesMarble[materialQuantities.tilesMarble.type] * 
-      materialQuantities.tilesMarble.area;
+    // Glasswork - Simple lookup
+    const glassworkUnitCost = (unitCostDatabase.materials.glasswork as { [key: string]: number })[materialQuantities.glasswork.type];
+    materials.glasswork = (glassworkUnitCost || 0) * materialQuantities.glasswork.area;
     
     // Miscellaneous (calculated as 2% of total material cost)
     const subtotal = Object.values(materials).reduce((sum, cost) => sum + (cost || 0), 0);
@@ -627,65 +565,44 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     labor.helpers = unitCostDatabase.labor.helper * 
       laborDetails.helpers.count * laborDetails.helpers.days;
     
-    // Supervisors
-    labor.supervisors = unitCostDatabase.labor.supervisor * 
-      laborDetails.supervisors.count * laborDetails.supervisors.days;
-    
     return labor;
   };
 
   const calculateOverheadCosts = (): OverheadCosts => {
-    const { overheadDetails, project } = state;
+    const { overheadDetails } = state;
     const overhead = { ...defaultOverhead };
 
-    // Permits - Fix types issue
+    // Permits - Nested lookup
     const permitType = overheadDetails.permits.type;
     const permitComplexity = overheadDetails.permits.complexity;
+    const permitCostMap = unitCostDatabase.overhead.permits as { [key: string]: { [key: string]: number } };
     if (permitType && permitComplexity && 
-        unitCostDatabase.overhead.permits[permitType] && 
-        unitCostDatabase.overhead.permits[permitType][permitComplexity]) {
-      overhead.permits = unitCostDatabase.overhead.permits[permitType][permitComplexity];
+        permitCostMap[permitType] && 
+        permitCostMap[permitType][permitComplexity]) {
+      overhead.permits = permitCostMap[permitType][permitComplexity];
+    } else {
+        overhead.permits = 0;
     }
     
-    // Design - Fix types issue
-    const designComplexity = overheadDetails.design.complexity;
-    const revisions = Math.min(overheadDetails.design.revisions, 3);
-    if (designComplexity && unitCostDatabase.overhead.design[designComplexity] && 
-        unitCostDatabase.overhead.design[designComplexity][revisions || 1]) {
-      overhead.design = unitCostDatabase.overhead.design[designComplexity][revisions || 1];
-    }
+    // Insurance - Simple lookup
+    const insuranceUnitCost = (unitCostDatabase.overhead.insurance as { [key: string]: number })[overheadDetails.insurance.coverage];
+    overhead.insurance = (insuranceUnitCost || 0) * overheadDetails.insurance.duration;
     
-    // Insurance
-    overhead.insurance = unitCostDatabase.overhead.insurance[overheadDetails.insurance.coverage] * 
-      overheadDetails.insurance.duration;
+    // Equipment - Simple lookup
+    const equipmentUnitCost = (unitCostDatabase.overhead.equipment as { [key: string]: number })[overheadDetails.equipment.type];
+    overhead.equipment = (equipmentUnitCost || 0) * overheadDetails.equipment.duration;
     
-    // Equipment
-    overhead.equipment = unitCostDatabase.overhead.equipment[overheadDetails.equipment.type] * 
-      overheadDetails.equipment.duration;
-    
-    // Transportation
+    // Transportation - Calculation remains the same
     overhead.transportation = overheadDetails.transportation.distance * 
       overheadDetails.transportation.frequency * 50; // Assume ₹50 per km
     
-    // Utilities
-    overhead.utilities = unitCostDatabase.overhead.utilities[overheadDetails.utilities.type] * 
-      overheadDetails.utilities.duration;
+    // Utilities - Simple lookup
+    const utilityUnitCost = (unitCostDatabase.overhead.utilities as { [key: string]: number })[overheadDetails.utilities.type];
+    overhead.utilities = (utilityUnitCost || 0) * overheadDetails.utilities.duration;
     
-    // Site Preparation
-    overhead.sitePreparation = unitCostDatabase.overhead.sitePreparation[overheadDetails.sitePreparation.complexity] * 
-      overheadDetails.sitePreparation.area;
-    
-    // Calculate material and labor costs to determine contingency
-    const materialCosts = calculateMaterialCosts();
-    const laborCosts = calculateLaborCosts();
-    
-    const materialTotal = Object.values(materialCosts).reduce((sum, cost) => sum + (cost || 0), 0);
-    const laborTotal = Object.values(laborCosts).reduce((sum, cost) => sum + (cost || 0), 0);
-    const overheadSubtotal = Object.values(overhead).reduce((sum, cost) => sum + (cost || 0), 0);
-    
-    // Contingency (based on percentage of total project cost)
-    overhead.contingency = (materialTotal + laborTotal + overheadSubtotal) * 
-      (overheadDetails.contingency.percentage / 100);
+    // Site Preparation - Simple lookup
+    const sitePrepUnitCost = (unitCostDatabase.overhead.sitePreparation as { [key: string]: number })[overheadDetails.sitePreparation.complexity];
+    overhead.sitePreparation = (sitePrepUnitCost || 0) * overheadDetails.sitePreparation.area;
     
     return overhead;
   };
@@ -805,13 +722,9 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   
   // Function to generate AI-based optimization suggestions
   const generateAIOptimizations = (state: EstimatorState): OptimizationSuggestion[] => {
-    // In a real implementation, these would come from Gemini AI
-    // For now, we'll generate smart suggestions based on the project data
-    
     const suggestions: OptimizationSuggestion[] = [];
-    const { materials, labor, overhead, breakdown, materialQuantities, laborDetails, overheadDetails } = state;
+    const { materials, labor, overhead, breakdown, materialQuantities, laborDetails, overheadDetails } = state; // Added overheadDetails back
     
-    // Only proceed if we have breakdown data
     if (!breakdown) return [];
     
     // Analyze cement costs
@@ -898,13 +811,13 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
     }
     
-    // Analyze overhead costs
-    if (overhead.equipment > 0 && overheadDetails.equipment.type === 'Heavy') {
+    // Analyze overhead costs - USE NEW SPECIFIC KEYS
+    if (overhead.equipment > 0 && overheadDetails.equipment.type === 'Heavy Machinery') { // Updated check
       suggestions.push({
         id: uuidv4(),
         category: 'other',
         title: 'Equipment sharing and rental optimization',
-        description: 'Instead of full-time equipment rental, analyze usage patterns and schedule equipment only when needed. Consider sharing heavy equipment between work zones or using smaller equipment where appropriate.',
+        description: 'Instead of full-time heavy machinery rental, analyze usage patterns and schedule equipment only when needed. Consider sharing heavy equipment between work zones or using smaller equipment where appropriate.',
         potentialSavings: overhead.equipment * 0.22,
         implementationComplexity: 'low',
         timeImpact: 'minimal',
@@ -912,44 +825,16 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
     }
     
-    // If we have high design costs
-    if (overhead.design > (breakdown.total * 0.05)) {
-      suggestions.push({
-        id: uuidv4(),
-        category: 'design',
-        title: 'Design standardization for repetitive elements',
-        description: 'Standardize design elements that are repeated throughout the project, such as door/window sizes, bathroom layouts, or structural components. This reduces design time, material waste, and improves construction efficiency.',
-        potentialSavings: overhead.design * 0.15,
-        implementationComplexity: 'medium',
-        timeImpact: 'minimal',
-        qualityImpact: 'none'
-      });
-    }
-    
-    // If flooring is expensive
-    if (materials.flooring > breakdown.materials.total * 0.1 && materialQuantities.flooring.type === 'Marble') {
-      suggestions.push({
-        id: uuidv4(),
-        category: 'materials',
-        title: 'Strategic flooring material selection',
-        description: 'Use premium materials like marble only in high-visibility areas (living room, entrance) and use less expensive but durable alternatives like vitrified tiles in other areas such as bedrooms and utility spaces.',
-        potentialSavings: materials.flooring * 0.30,
-        implementationComplexity: 'low',
-        timeImpact: 'none',
-        qualityImpact: 'minimal'
-      });
-    }
-    
-    // Site preparation optimization
-    if (overhead.sitePreparation > 0 && overheadDetails.sitePreparation.complexity === 'High') {
+    // Example: Add suggestion based on complex permits
+    if (overhead.permits > 0 && overheadDetails.permits.complexity === 'Complex Zoning') {
       suggestions.push({
         id: uuidv4(),
         category: 'other',
-        title: 'Phased site preparation approach',
-        description: 'Implement a phased site preparation strategy instead of preparing the entire site at once. This reduces initial costs and allows for better resource allocation throughout the project timeline.',
-        potentialSavings: overhead.sitePreparation * 0.18,
+        title: 'Streamline Complex Permitting Process',
+        description: 'Engage a local consultant experienced with complex zoning to navigate the permitting process more efficiently, potentially reducing delays and associated overhead costs.',
+        potentialSavings: overhead.permits * 0.10, // Lower potential, focus on time
         implementationComplexity: 'medium',
-        timeImpact: 'minimal',
+        timeImpact: 'moderate', // Positive impact potentially
         qualityImpact: 'none'
       });
     }
@@ -988,6 +873,162 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }).format(value);
   };
 
+  // --- START: Added Report Generation/Download Logic ---
+
+  const generateReportData = () => {
+    if (!state.breakdown || !state.project) {
+      return null;
+    }
+
+    const { project, breakdown, optimization } = state;
+
+    return {
+      project: {
+        name: project.name,
+        location: project.location,
+        constructionType: project.constructionType,
+        area: project.area,
+        floors: project.floors
+      },
+      costs: {
+        materials: breakdown.materials.total,
+        labor: breakdown.labor.total,
+        overhead: breakdown.overhead.total,
+        total: breakdown.total
+      },
+      materialItems: breakdown.materials.items,
+      laborItems: breakdown.labor.items,
+      overheadItems: breakdown.overhead.items,
+      optimization: optimization ? {
+        suggestions: optimization.suggestions,
+        potentialSavings: optimization.potentialSavings,
+        optimizedTotal: optimization.optimizedTotal
+      } : null
+    };
+  };
+
+  const generateReportText = () => {
+    const data = generateReportData();
+    if (!data) return '';
+
+    const { project, costs, materialItems, laborItems, overheadItems, optimization } = data;
+
+    let text = `
+========================================
+    CONSTRUCTION COST ESTIMATION REPORT
+========================================
+
+PROJECT DETAILS:
+---------------
+Project Name: ${project.name}
+Location: ${project.location}
+Construction Type: ${project.constructionType}
+Area: ${project.area} sq. ft.
+Floors: ${project.floors}
+
+COST SUMMARY:
+------------
+Materials: ${formatCurrency(costs.materials)}
+Labor: ${formatCurrency(costs.labor)}
+Overhead: ${formatCurrency(costs.overhead)}
+TOTAL ESTIMATED COST: ${formatCurrency(costs.total)}
+
+DETAILED BREAKDOWN:
+-----------------
+
+1. MATERIAL COSTS:
+${Object.entries(materialItems)
+  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
+  .join('\\n')}
+
+2. LABOR COSTS:
+${Object.entries(laborItems)
+  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
+  .join('\\n')}
+
+3. OVERHEAD COSTS:
+${Object.entries(overheadItems)
+  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
+  .join('\\n')}
+`;
+
+    if (optimization) {
+      text += `
+COST OPTIMIZATION:
+----------------
+Potential Savings: ${formatCurrency(optimization.potentialSavings)}
+Optimized Total Cost: ${formatCurrency(optimization.optimizedTotal)}
+
+OPTIMIZATION SUGGESTIONS:
+${optimization.suggestions
+  .map((suggestion, index) => `
+${index + 1}. ${suggestion.title}
+   Category: ${suggestion.category}
+   Description: ${suggestion.description}
+   Potential Savings: ${formatCurrency(suggestion.potentialSavings)}
+   Implementation Complexity: ${suggestion.implementationComplexity}
+   Time Impact: ${suggestion.timeImpact}
+   Quality Impact: ${suggestion.qualityImpact}
+`)
+  .join('')}
+`;
+    }
+
+    text += `
+========================================
+     Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+              BuildWise Cost Estimator
+========================================
+`;
+
+    return text;
+  };
+
+  const downloadReportAsTxt = () => {
+    try {
+      if (!state.project || !state.breakdown) {
+        throw new Error('No project data or cost breakdown available to generate report.');
+      }
+      
+      const reportText = generateReportText();
+      if (!reportText) {
+        throw new Error('Failed to generate report text.');
+      }
+      
+      // Create file
+      const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create download link and trigger download
+      const link = document.createElement('a');
+      const projectName = state.project.name.replace(/\\s+/g, '_').toLowerCase() || 'construction';
+      link.href = url;
+      link.download = `${projectName}_report.txt`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Release the object URL
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        variant: "default",
+        title: "Report Generated",
+        description: "Your report has been downloaded successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error downloading report:", error);
+      toast({
+        variant: "destructive",
+        title: "Report Generation Failed",
+        description: error.message || "Failed to generate the report. Please try again.",
+      });
+    }
+  };
+
+  // --- END: Added Report Generation/Download Logic ---
+
   return (
     <EstimatorContext.Provider
       value={{
@@ -1001,7 +1042,8 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         resetEstimator,
         formatCurrency,
         getMaterialOptions,
-        getComplexityOptions
+        getComplexityOptions,
+        downloadReportAsTxt
       }}
     >
       {children}
@@ -1015,4 +1057,19 @@ export const useEstimator = () => {
     throw new Error('useEstimator must be used within an EstimatorProvider');
   }
   return context;
+};
+
+// Export the specific option getters for use in Estimate.tsx
+export {
+  electricalComponentOptions,
+  electricalComplexityOptions,
+  plumbingComponentOptions,
+  plumbingComplexityOptions,
+  fixtureOptions,
+  permitTypeOptions,
+  permitComplexityOptions,
+  insuranceCoverageOptions,
+  equipmentTypeOptions,
+  utilityTypeOptions,
+  sitePreparationComplexityOptions
 };

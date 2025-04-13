@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEstimator } from '@/contexts/EstimatorContext';
@@ -142,6 +141,18 @@ const CostDistributionCharts: React.FC = () => {
     }
   ];
 
+  // Combine and find top 5 items across all categories
+  const allItems = [
+    ...Object.entries(state.breakdown.materials.items).map(([name, value]) => ({ name: `Mat: ${name}`, value })),
+    ...Object.entries(state.breakdown.labor.items).map(([name, value]) => ({ name: `Lab: ${name}`, value })),
+    ...Object.entries(state.breakdown.overhead.items).map(([name, value]) => ({ name: `Ovh: ${name}`, value }))
+  ];
+
+  const topItemsData = allItems
+    .filter(item => item.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+
   return (
     <Card className="shadow-md mb-8">
       <CardHeader>
@@ -270,32 +281,36 @@ const CostDistributionCharts: React.FC = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Radial Bar Chart */}
+          {/* Horizontal Bar Chart for Top 5 Items */}
           <div className="h-[350px] flex flex-col items-center justify-center">
-            <h3 className="text-lg font-medium mb-4">Category Cost Comparison</h3>
+            <h3 className="text-lg font-medium mb-4">Top 5 Cost Items</h3>
             <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart 
-                cx="50%" 
-                cy="50%" 
-                innerRadius="10%" 
-                outerRadius="80%" 
-                barSize={20} 
-                data={pieData}
+              <BarChart
+                layout="vertical" // Set layout to vertical for horizontal bars
+                data={topItemsData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 40, // Adjust left margin for labels
+                  bottom: 5,
+                }}
               >
-                <RadialBar
-                  minAngle={15}
-                  label={{ position: 'insideStart', fill: '#fff' }}
-                  background
-                  clockWise
-                  dataKey="value"
-                >
-                  {pieData.map((_, index) => (
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tickFormatter={(value) => formatCurrency(value, true)} /> 
+                <YAxis 
+                  dataKey="name" 
+                  type="category" 
+                  width={120} // Adjust width for longer labels
+                  tick={{ fontSize: 12 }}
+                />
+                <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                {/* No Legend needed for single bar */}
+                <Bar dataKey="value" name="Cost" barSize={20}>
+                  {topItemsData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </RadialBar>
-                <Legend iconSize={10} layout="vertical" verticalAlign="middle" wrapperStyle={{ lineHeight: '40px' }} />
-                <Tooltip formatter={(value) => formatCurrency(value as number)} />
-              </RadialBarChart>
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

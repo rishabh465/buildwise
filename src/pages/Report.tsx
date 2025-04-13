@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -28,171 +28,27 @@ import { useToast } from '@/components/ui/use-toast';
 
 const Report = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { state, formatCurrency } = useEstimator();
+  const { state, formatCurrency, downloadReportAsTxt } = useEstimator();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleBackToDashboard = () => {
     navigate('/dashboard');
   };
 
-  const generateReportData = () => {
-    if (!state.breakdown || !state.project) {
-      return null;
-    }
-
-    const { project, breakdown, materials, labor, overhead, optimization } = state;
-
-    const reportData = {
-      project: {
-        name: project.name,
-        location: project.location,
-        constructionType: project.constructionType,
-        area: project.area,
-        floors: project.floors
-      },
-      costs: {
-        materials: breakdown.materials.total,
-        labor: breakdown.labor.total,
-        overhead: breakdown.overhead.total,
-        total: breakdown.total
-      },
-      materialItems: breakdown.materials.items,
-      laborItems: breakdown.labor.items,
-      overheadItems: breakdown.overhead.items,
-      optimization: optimization ? {
-        suggestions: optimization.suggestions,
-        potentialSavings: optimization.potentialSavings,
-        optimizedTotal: optimization.optimizedTotal
-      } : null
-    };
-
-    return reportData;
-  };
-
-  const generateReportText = () => {
-    const data = generateReportData();
-    if (!data) return '';
-
-    const { project, costs, materialItems, laborItems, overheadItems, optimization } = data;
-
-    let text = `
-========================================
-    CONSTRUCTION COST ESTIMATION REPORT
-========================================
-
-PROJECT DETAILS:
----------------
-Project Name: ${project.name}
-Location: ${project.location}
-Construction Type: ${project.constructionType}
-Area: ${project.area} sq. ft.
-Floors: ${project.floors}
-
-COST SUMMARY:
-------------
-Materials: ${formatCurrency(costs.materials)}
-Labor: ${formatCurrency(costs.labor)}
-Overhead: ${formatCurrency(costs.overhead)}
-TOTAL ESTIMATED COST: ${formatCurrency(costs.total)}
-
-DETAILED BREAKDOWN:
------------------
-
-1. MATERIAL COSTS:
-${Object.entries(materialItems)
-  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
-  .join('\n')}
-
-2. LABOR COSTS:
-${Object.entries(laborItems)
-  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
-  .join('\n')}
-
-3. OVERHEAD COSTS:
-${Object.entries(overheadItems)
-  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
-  .join('\n')}
-`;
-
-    if (optimization) {
-      text += `
-COST OPTIMIZATION:
-----------------
-Potential Savings: ${formatCurrency(optimization.potentialSavings)}
-Optimized Total Cost: ${formatCurrency(optimization.optimizedTotal)}
-
-OPTIMIZATION SUGGESTIONS:
-${optimization.suggestions
-  .map((suggestion, index) => `
-${index + 1}. ${suggestion.title}
-   Category: ${suggestion.category}
-   Description: ${suggestion.description}
-   Potential Savings: ${formatCurrency(suggestion.potentialSavings)}
-   Implementation Complexity: ${suggestion.implementationComplexity}
-   Time Impact: ${suggestion.timeImpact}
-   Quality Impact: ${suggestion.qualityImpact}
-`)
-  .join('')}
-`;
-    }
-
-    text += `
-========================================
-     Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
-              BuildWise Cost Estimator
-========================================
-`;
-
-    return text;
-  };
-
-  const downloadReportAsTxt = () => {
+  const handleDownloadClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsGenerating(true);
     try {
-      setIsGenerating(true);
-      
-      const reportText = generateReportText();
-      if (!reportText) {
-        throw new Error('No data available to generate report');
-      }
-      
-      // Create file
-      const blob = new Blob([reportText], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      
-      // Create download link and trigger download
-      const link = document.createElement('a');
-      const projectName = state.project.name.replace(/\s+/g, '_').toLowerCase() || 'construction';
-      link.href = url;
-      link.download = `${projectName}_report.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Release the object URL
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 100);
-      
-      toast({
-        variant: "default",
-        title: "Report Generated",
-        description: "Your report has been generated successfully.",
-      });
+      await downloadReportAsTxt();
     } catch (error) {
-      console.error("Error downloading report:", error);
-      toast({
-        variant: "destructive",
-        title: "Report Generation Failed",
-        description: error.message || "Failed to generate the report. Please try again.",
-      });
-    } finally {
+      console.error("Download initiated from Report page failed (this shouldn't normally happen):", error);
+    }
+    finally {
       setIsGenerating(false);
     }
   };
   
-  // Check if data is available
-  const hasData = state.breakdown !== null;
+  const hasData = state.project && state.breakdown;
   
   return (
     <div className="flex min-h-screen flex-col">
@@ -217,7 +73,7 @@ ${index + 1}. ${suggestion.title}
               </Button>
               
               <Button 
-                onClick={downloadReportAsTxt}
+                onClick={handleDownloadClick}
                 disabled={!hasData || isGenerating}
                 className="gap-2"
               >

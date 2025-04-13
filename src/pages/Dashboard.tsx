@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -10,13 +9,16 @@ import ProjectOverview from '@/components/dashboard/ProjectOverview';
 import CostDistributionCharts from '@/components/dashboard/CostDistributionCharts';
 import DetailedCostBreakdown from '@/components/dashboard/DetailedCostBreakdown';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { FileTextIcon } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
-  const { state, updateProject, calculateCosts } = useEstimator();
+  const { state, updateProject, calculateCosts, downloadReportAsTxt } = useEstimator();
   const { toast } = useToast();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Load project data if projectId is provided
   useEffect(() => {
@@ -70,6 +72,18 @@ const Dashboard = () => {
     }
   }, [state.breakdown, navigate, toast, loading, projectId]);
 
+  const handleDownloadClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsGenerating(true);
+    try {
+      await downloadReportAsTxt();
+    } catch (error) {
+      console.error("Download initiated from Dashboard page failed:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -97,6 +111,8 @@ const Dashboard = () => {
     return null; // Avoid rendering if no breakdown data and not loading
   }
 
+  const hasData = state.project && state.breakdown;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -109,6 +125,21 @@ const Dashboard = () => {
               <p className="text-muted-foreground mt-2">
                 Detailed cost breakdown for {state.project.name || 'your project'}
               </p>
+            </div>
+            <div>
+              <Button 
+                onClick={handleDownloadClick}
+                disabled={!hasData || isGenerating}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <>Generating<span className="loading loading-spinner loading-xs"></span></>
+                ) : (
+                  <>
+                    <FileTextIcon className="h-4 w-4" /> Download Report
+                  </>
+                )}
+              </Button>
             </div>
           </div>
           

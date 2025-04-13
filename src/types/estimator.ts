@@ -1,4 +1,3 @@
-
 export interface ProjectDetails {
   name: string;
   location: string;
@@ -69,10 +68,6 @@ export interface MaterialQuantities {
     type: string;
     area: number;
   };
-  tilesMarble: {
-    type: string;
-    area: number;
-  };
 }
 
 export interface LaborDetails {
@@ -100,20 +95,12 @@ export interface LaborDetails {
     count: number;
     days: number;
   };
-  supervisors: {
-    count: number;
-    days: number;
-  };
 }
 
 export interface OverheadDetails {
   permits: {
     type: string;
     complexity: string;
-  };
-  design: {
-    complexity: string;
-    revisions: number;
   };
   insurance: {
     coverage: string;
@@ -135,9 +122,6 @@ export interface OverheadDetails {
     complexity: string;
     area: number;
   };
-  contingency: {
-    percentage: number;
-  };
 }
 
 export interface MaterialCosts {
@@ -156,7 +140,6 @@ export interface MaterialCosts {
   roofing: number;
   flooring: number;
   glasswork: number;
-  tilesMarble: number;
   miscellaneous: number;
 }
 
@@ -167,18 +150,15 @@ export interface LaborCosts {
   electricians: number;
   plumbers: number;
   helpers: number;
-  supervisors: number;
 }
 
 export interface OverheadCosts {
   permits: number;
-  design: number;
   insurance: number;
   equipment: number;
   transportation: number;
   utilities: number;
   sitePreparation: number;
-  contingency: number;
 }
 
 export interface CostOptimization {
@@ -230,19 +210,19 @@ export interface EstimatorState {
 }
 
 export interface MaterialUnitCosts {
-  [key: string]: {
-    [key: string]: number;
-  };
+  [materialCategory: string]:
+    | { [type: string]: number }
+    | { [components: string]: { [complexity: string]: number } };
 }
 
 export interface LaborUnitCosts {
-  [key: string]: number;
+  [laborType: string]: number;
 }
 
 export interface OverheadUnitCosts {
-  [key: string]: {
-    [key: string]: number;
-  };
+  [overheadCategory: string]:
+    | { [type: string]: number }
+    | { [type: string]: { [complexity: string]: number } };
 }
 
 export interface UnitCostDatabase {

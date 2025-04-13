@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -145,12 +144,15 @@ const ProjectOverview: React.FC = () => {
             Cost Optimization <ArrowRight className="h-4 w-4" />
           </Button>
           
+          {/* Remove the Save Project Button */}
+          {/* 
           <Button
             onClick={handleSaveProject}
             className="gap-2"
           >
             Save Project
           </Button>
+          */}
         </div>
       </CardContent>
     </Card>
