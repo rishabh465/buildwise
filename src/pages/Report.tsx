@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -118,7 +117,7 @@ const Report = () => {
         headStyles: { fillColor: [139, 92, 246] },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-      }, doc);
+      });
       
       // Add material breakdown
       const materialItems = Object.entries(state.breakdown.materials.items)
@@ -137,7 +136,7 @@ const Report = () => {
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        }, doc);
+        });
       }
       
       // Add labor breakdown
@@ -161,7 +160,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc);
+          });
         } else {
           doc.setFontSize(14);
           doc.text('Labor Cost Breakdown', 20, newY);
@@ -173,7 +172,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc);
+          });
         }
       }
       
@@ -198,7 +197,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc);
+          });
         } else {
           doc.setFontSize(14);
           doc.text('Overhead Cost Breakdown', 20, newY);
@@ -210,7 +209,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          }, doc);
+          });
         }
       }
 
@@ -246,7 +245,7 @@ const Report = () => {
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        }, doc);
+        });
         
         // Add detailed descriptions of suggestions
         const lastY = (doc as any).lastAutoTable?.finalY || 70;
