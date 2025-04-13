@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useEstimator } from '@/contexts/EstimatorContext';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -15,334 +13,474 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
 import {
-  Download,
-  Mail,
-  Loader2,
-  CheckCircle,
-  FileText
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { DownloadIcon, FileTextIcon, AlertCircleIcon, CheckCircle2Icon } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const Report = () => {
   const navigate = useNavigate();
-  const { state, formatCurrency } = useEstimator();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [reportGenerated, setReportGenerated] = useState(false);
-  const [email, setEmail] = useState('');
+  const { state, formatCurrency } = useEstimator();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  useEffect(() => {
-    if (!state.breakdown) {
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  const generateReportData = () => {
+    if (!state.breakdown || !state.project) {
+      return null;
+    }
+
+    const { project, breakdown, materials, labor, overhead, optimization } = state;
+
+    const reportData = {
+      project: {
+        name: project.name,
+        location: project.location,
+        constructionType: project.constructionType,
+        area: project.area,
+        floors: project.floors
+      },
+      costs: {
+        materials: breakdown.materials.total,
+        labor: breakdown.labor.total,
+        overhead: breakdown.overhead.total,
+        total: breakdown.total
+      },
+      materialItems: breakdown.materials.items,
+      laborItems: breakdown.labor.items,
+      overheadItems: breakdown.overhead.items,
+      optimization: optimization ? {
+        suggestions: optimization.suggestions,
+        potentialSavings: optimization.potentialSavings,
+        optimizedTotal: optimization.optimizedTotal
+      } : null
+    };
+
+    return reportData;
+  };
+
+  const generateReportText = () => {
+    const data = generateReportData();
+    if (!data) return '';
+
+    const { project, costs, materialItems, laborItems, overheadItems, optimization } = data;
+
+    let text = `
+========================================
+    CONSTRUCTION COST ESTIMATION REPORT
+========================================
+
+PROJECT DETAILS:
+---------------
+Project Name: ${project.name}
+Location: ${project.location}
+Construction Type: ${project.constructionType}
+Area: ${project.area} sq. ft.
+Floors: ${project.floors}
+
+COST SUMMARY:
+------------
+Materials: ${formatCurrency(costs.materials)}
+Labor: ${formatCurrency(costs.labor)}
+Overhead: ${formatCurrency(costs.overhead)}
+TOTAL ESTIMATED COST: ${formatCurrency(costs.total)}
+
+DETAILED BREAKDOWN:
+-----------------
+
+1. MATERIAL COSTS:
+${Object.entries(materialItems)
+  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
+  .join('\n')}
+
+2. LABOR COSTS:
+${Object.entries(laborItems)
+  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
+  .join('\n')}
+
+3. OVERHEAD COSTS:
+${Object.entries(overheadItems)
+  .map(([name, cost]) => `   ${name.charAt(0).toUpperCase() + name.slice(1)}: ${formatCurrency(cost as number)}`)
+  .join('\n')}
+`;
+
+    if (optimization) {
+      text += `
+COST OPTIMIZATION:
+----------------
+Potential Savings: ${formatCurrency(optimization.potentialSavings)}
+Optimized Total Cost: ${formatCurrency(optimization.optimizedTotal)}
+
+OPTIMIZATION SUGGESTIONS:
+${optimization.suggestions
+  .map((suggestion, index) => `
+${index + 1}. ${suggestion.title}
+   Category: ${suggestion.category}
+   Description: ${suggestion.description}
+   Potential Savings: ${formatCurrency(suggestion.potentialSavings)}
+   Implementation Complexity: ${suggestion.implementationComplexity}
+   Time Impact: ${suggestion.timeImpact}
+   Quality Impact: ${suggestion.qualityImpact}
+`)
+  .join('')}
+`;
+    }
+
+    text += `
+========================================
+     Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+              BuildWise Cost Estimator
+========================================
+`;
+
+    return text;
+  };
+
+  const downloadReportAsTxt = () => {
+    try {
+      setIsGenerating(true);
+      
+      const reportText = generateReportText();
+      if (!reportText) {
+        throw new Error('No data available to generate report');
+      }
+      
+      // Create file
+      const blob = new Blob([reportText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link and trigger download
+      const link = document.createElement('a');
+      const projectName = state.project.name.replace(/\s+/g, '_').toLowerCase() || 'construction';
+      link.href = url;
+      link.download = `${projectName}_report.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Release the object URL
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      toast({
+        title: "Report downloaded successfully",
+        description: "Your construction cost report has been saved as a text file.",
+      });
+    } catch (error) {
+      console.error("Error downloading report:", error);
       toast({
         variant: "destructive",
-        title: "No data available",
-        description: "Please complete the estimation form first.",
+        title: "Report Generation Failed",
+        description: error.message || "Failed to generate the report. Please try again.",
       });
-      navigate('/estimate');
+    } finally {
+      setIsGenerating(false);
     }
-  }, [state.breakdown, navigate, toast]);
-
-  if (!state.breakdown) {
-    return null;
-  }
-
-  const handleGenerateReport = () => {
-    setLoading(true);
-    
-    setTimeout(() => {
-      setLoading(false);
-      setReportGenerated(true);
-      
-      toast({
-        title: "Report generated successfully",
-        description: "Your report is now ready to download.",
-      });
-    }, 2000);
   };
-
-  const handleDownload = () => {
-    const doc = new jsPDF();
-    
-    doc.setTextColor(50);
-    doc.setFontSize(18);
-    doc.text('Project Cost Report', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.text(`Project Name: ${state.project.name}`, 20, 40, { align: 'left' });
-    doc.text(`Location: ${state.project.location}`, 20, 50, { align: 'left' });
-    doc.text(`Construction Type: ${state.project.constructionType}`, 20, 60, { align: 'left' });
-    
-    doc.autoTable({
-      startY: 80,
-      head: [['Category', 'Cost']],
-      body: [
-        ['Total Project Cost', formatCurrency(state.breakdown.total)],
-        ['Materials', formatCurrency(state.breakdown.materials.total)],
-        ['Labor', formatCurrency(state.breakdown.labor.total)],
-        ['Overhead', formatCurrency(state.breakdown.overhead.total)],
-      ],
-    });
-
-    if (state.optimization) {
-      doc.addPage();
-      doc.setFontSize(18);
-      doc.text('Cost Optimization Suggestions', 105, 20, { align: 'center' });
-      
-      doc.setFontSize(14);
-      doc.text('Potential Savings Overview', 20, 40);
-      
-      doc.setFontSize(12);
-      doc.text(`Original Cost: ${formatCurrency(state.breakdown.total)}`, 20, 55);
-      doc.text(`Potential Savings: ${formatCurrency(state.optimization.potentialSavings)}`, 20, 65);
-      doc.text(`Optimized Cost: ${formatCurrency(state.optimization.optimizedTotal)}`, 20, 75);
-      
-      doc.setFontSize(14);
-      doc.text('Detailed Suggestions', 20, 95);
-      
-      const suggestionData = state.optimization.suggestions.map((suggestion, index) => [
-        `${index + 1}. ${suggestion.title}`,
-        suggestion.category,
-        formatCurrency(suggestion.potentialSavings),
-        suggestion.implementationComplexity
-      ]);
-      
-      doc.autoTable({
-        startY: 100,
-        head: [['Suggestion', 'Category', 'Savings', 'Complexity']],
-        body: suggestionData
-      });
-    }
-
-    doc.save('project_cost_report.pdf');
-    
-    toast({
-      title: "Report downloaded",
-      description: "Your project cost report has been saved.",
-    });
-  };
-
-  const handleEmailReport = () => {
-    if (!email || !email.includes('@')) {
-      toast({
-        variant: "destructive",
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-      });
-      return;
-    }
-    
-    toast({
-      title: "Sending report",
-      description: `Sending report to ${email}`,
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Report sent successfully",
-        description: `The report has been sent to ${email}`,
-      });
-      setEmail('');
-    }, 1500);
-  };
-
+  
+  // Check if data is available
+  const hasData = state.breakdown !== null;
+  
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       
       <main className="flex-1 py-10">
         <div className="container max-w-screen-xl px-4">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">Project Report</h1>
-            <p className="text-muted-foreground mt-2">
-              Generate and download a comprehensive project report
-            </p>
+          <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">Project Report</h1>
+              <p className="text-muted-foreground mt-2">
+                Detailed cost estimation report for {state.project.name || 'your project'}
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleBackToDashboard}
+              >
+                Back to Dashboard
+              </Button>
+              
+              <Button 
+                onClick={downloadReportAsTxt}
+                disabled={!hasData || isGenerating}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <>Generating<span className="loading loading-spinner loading-xs"></span></>
+                ) : (
+                  <>
+                    <FileTextIcon className="h-4 w-4" /> Download Report
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           
-          <Card className="mb-8 shadow-md">
-            <CardHeader>
-              <CardTitle>Report Summary</CardTitle>
-              <CardDescription>
-                Overview of what will be included in the report
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="rounded-lg border p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge variant="outline" className="bg-primary/10 text-primary">Project Details</Badge>
-                    <h3 className="font-semibold">Project Information</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Basic project information including name, location, area, construction type, and other parameters.
-                  </p>
+          {!hasData ? (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircleIcon className="h-4 w-4" />
+              <AlertTitle>No data available</AlertTitle>
+              <AlertDescription>
+                Please fill out the estimation form first to generate a report.
+                <div className="mt-4">
+                  <Button onClick={() => navigate('/estimate')}>
+                    Go to Estimator
+                  </Button>
                 </div>
-                
-                <div className="rounded-lg border p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge variant="outline" className="bg-primary/10 text-primary">Cost Breakdown</Badge>
-                    <h3 className="font-semibold">Detailed Cost Analysis</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Complete breakdown of all cost categories including materials, labor, and overhead with detailed line items.
-                  </p>
-                </div>
-                
-                {state.isOptimized && state.optimization && (
-                  <div className="rounded-lg border p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Badge variant="outline" className="bg-accent/10 text-accent">Optimization</Badge>
-                      <h3 className="font-semibold">Cost Optimization Suggestions</h3>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Overview</CardTitle>
+                  <CardDescription>Summary of project details and estimated costs</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Project Details</h3>
+                      <dl className="space-y-2">
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Name:</dt>
+                          <dd className="font-medium">{state.project.name}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Location:</dt>
+                          <dd className="font-medium">{state.project.location}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Type:</dt>
+                          <dd className="font-medium">{state.project.constructionType}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Area:</dt>
+                          <dd className="font-medium">{state.project.area} sq. ft.</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Floors:</dt>
+                          <dd className="font-medium">{state.project.floors}</dd>
+                        </div>
+                      </dl>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      AI-generated cost-saving recommendations with potential savings and implementation details.
-                    </p>
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Cost Summary</h3>
+                      <dl className="space-y-2">
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Materials:</dt>
+                          <dd className="font-medium">{formatCurrency(state.breakdown.materials.total)}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Labor:</dt>
+                          <dd className="font-medium">{formatCurrency(state.breakdown.labor.total)}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Overhead:</dt>
+                          <dd className="font-medium">{formatCurrency(state.breakdown.overhead.total)}</dd>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t">
+                          <dt className="font-medium">Total Estimated Cost:</dt>
+                          <dd className="font-bold text-lg">{formatCurrency(state.breakdown.total)}</dd>
+                        </div>
+                        
+                        {state.optimization && (
+                          <>
+                            <div className="flex justify-between pt-2 text-green-600">
+                              <dt className="font-medium">Potential Savings:</dt>
+                              <dd className="font-bold">{formatCurrency(state.optimization.potentialSavings)}</dd>
+                            </div>
+                            <div className="flex justify-between text-green-600">
+                              <dt className="font-medium">Optimized Total:</dt>
+                              <dd className="font-bold">{formatCurrency(state.optimization.optimizedTotal)}</dd>
+                            </div>
+                          </>
+                        )}
+                      </dl>
+                    </div>
                   </div>
-                )}
-                
-                <div className="rounded-lg border p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge variant="outline" className="bg-primary/10 text-primary">Visualizations</Badge>
-                    <h3 className="font-semibold">Charts and Graphs</h3>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Detailed Breakdown</CardTitle>
+                  <CardDescription>Itemized breakdown of all estimated costs</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Material Costs</h3>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Item</TableHead>
+                            <TableHead className="text-right">Cost</TableHead>
+                            <TableHead className="text-right">Percentage</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Object.entries(state.breakdown.materials.items).map(([key, value]) => (
+                            <TableRow key={key}>
+                              <TableCell className="font-medium capitalize">{key}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(value as number)}</TableCell>
+                              <TableCell className="text-right">
+                                {((value as number) / state.breakdown.materials.total * 100).toFixed(1)}%
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableCell className="font-bold">Total Materials</TableCell>
+                            <TableCell className="text-right font-bold">{formatCurrency(state.breakdown.materials.total)}</TableCell>
+                            <TableCell className="text-right font-bold">
+                              {((state.breakdown.materials.total / state.breakdown.total) * 100).toFixed(1)}%
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Labor Costs</h3>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Item</TableHead>
+                            <TableHead className="text-right">Cost</TableHead>
+                            <TableHead className="text-right">Percentage</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Object.entries(state.breakdown.labor.items).map(([key, value]) => (
+                            <TableRow key={key}>
+                              <TableCell className="font-medium capitalize">{key}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(value as number)}</TableCell>
+                              <TableCell className="text-right">
+                                {((value as number) / state.breakdown.labor.total * 100).toFixed(1)}%
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableCell className="font-bold">Total Labor</TableCell>
+                            <TableCell className="text-right font-bold">{formatCurrency(state.breakdown.labor.total)}</TableCell>
+                            <TableCell className="text-right font-bold">
+                              {((state.breakdown.labor.total / state.breakdown.total) * 100).toFixed(1)}%
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Overhead Costs</h3>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Item</TableHead>
+                            <TableHead className="text-right">Cost</TableHead>
+                            <TableHead className="text-right">Percentage</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Object.entries(state.breakdown.overhead.items).map(([key, value]) => (
+                            <TableRow key={key}>
+                              <TableCell className="font-medium capitalize">{key}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(value as number)}</TableCell>
+                              <TableCell className="text-right">
+                                {((value as number) / state.breakdown.overhead.total * 100).toFixed(1)}%
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableCell className="font-bold">Total Overhead</TableCell>
+                            <TableCell className="text-right font-bold">{formatCurrency(state.breakdown.overhead.total)}</TableCell>
+                            <TableCell className="text-right font-bold">
+                              {((state.breakdown.overhead.total / state.breakdown.total) * 100).toFixed(1)}%
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Visual representations of cost distribution, breakdowns, and comparisons for easy analysis.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <div className="w-full">
-                <div className="flex justify-between items-center mb-4">
-                  <p className="text-sm text-muted-foreground">
-                    Total Project Cost: <span className="font-semibold">{formatCurrency(state.breakdown.total)}</span>
-                  </p>
-                  {state.isOptimized && state.optimization && (
-                    <p className="text-sm text-muted-foreground">
-                      Potential Savings: <span className="font-semibold text-accent">{formatCurrency(state.optimization.potentialSavings)}</span>
-                    </p>
-                  )}
-                </div>
-                
-                <Button 
-                  className="w-full gap-2" 
-                  onClick={handleGenerateReport}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Generating Report...
-                    </>
-                  ) : reportGenerated ? (
-                    <>
-                      <CheckCircle className="h-4 w-4" /> Report Ready
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="h-4 w-4" /> Generate Report
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-          
-          {reportGenerated && (
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle>Download Report</CardTitle>
-                <CardDescription>
-                  Download or email the generated report
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Download Options</h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <Button 
-                          variant="default" 
-                          className="w-full gap-2"
-                          onClick={handleDownload}
-                        >
-                          <Download className="h-4 w-4" /> Download PDF Report
-                        </Button>
+                </CardContent>
+              </Card>
+              
+              {state.optimization && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Optimization Recommendations</CardTitle>
+                    <CardDescription>Cost-saving suggestions for your project</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div className="flex flex-col md:flex-row justify-between gap-4">
+                        <div className="p-4 border rounded-lg bg-muted/30">
+                          <p className="text-sm text-muted-foreground">Potential Savings</p>
+                          <p className="text-2xl font-bold text-green-600">{formatCurrency(state.optimization.potentialSavings)}</p>
+                        </div>
+                        <div className="p-4 border rounded-lg bg-muted/30">
+                          <p className="text-sm text-muted-foreground">Optimized Total</p>
+                          <p className="text-2xl font-bold">{formatCurrency(state.optimization.optimizedTotal)}</p>
+                        </div>
+                        <div className="p-4 border rounded-lg bg-muted/30">
+                          <p className="text-sm text-muted-foreground">Savings Percentage</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            {((state.optimization.potentialSavings / state.breakdown.total) * 100).toFixed(1)}%
+                          </p>
+                        </div>
                       </div>
                       
-                      <div className="p-4 bg-muted/50 rounded-lg">
-                        <div className="flex items-start gap-3">
-                          <FileText className="h-5 w-5 text-primary mt-0.5" />
-                          <div>
-                            <p className="font-medium">Report Details</p>
-                            <p className="text-sm text-muted-foreground">
-                              This comprehensive PDF report contains all project details, cost breakdowns, 
-                              optimization suggestions, and visual analytics. It's print-ready and includes a 
-                              timestamp and reference ID.
-                            </p>
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Recommendations</h3>
+                        {state.optimization.suggestions.map((suggestion, index) => (
+                          <div key={suggestion.id} className="p-4 border rounded-lg">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium text-lg">{index + 1}. {suggestion.title}</h4>
+                              <Badge variant="outline" className="capitalize">{suggestion.category}</Badge>
+                            </div>
+                            <p className="text-muted-foreground mb-4">{suggestion.description}</p>
+                            <div className="flex flex-wrap gap-2 justify-between items-center">
+                              <div>
+                                <span className="text-sm text-muted-foreground mr-2">Potential Savings:</span>
+                                <span className="font-medium text-green-600">{formatCurrency(suggestion.potentialSavings)}</span>
+                              </div>
+                              <div className="flex gap-3">
+                                <Badge variant={suggestion.implementationComplexity === 'low' ? 'success' : 
+                                  suggestion.implementationComplexity === 'medium' ? 'warning' : 'destructive'}>
+                                  {suggestion.implementationComplexity} complexity
+                                </Badge>
+                                <Badge variant={suggestion.timeImpact === 'none' || suggestion.timeImpact === 'minimal' ? 'outline' : 'secondary'}>
+                                  {suggestion.timeImpact} time impact
+                                </Badge>
+                                <Badge variant={suggestion.qualityImpact === 'none' || suggestion.qualityImpact === 'minimal' ? 'outline' : 'destructive'}>
+                                  {suggestion.qualityImpact} quality impact
+                                </Badge>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Email Report</h3>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
-                        <div className="flex gap-2">
-                          <Input 
-                            id="email" 
-                            type="email" 
-                            placeholder="Enter your email address" 
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                          />
-                          <Button 
-                            variant="outline" 
-                            className="gap-2 shrink-0"
-                            onClick={handleEmailReport}
-                            disabled={!email}
-                          >
-                            <Mail className="h-4 w-4" /> Send
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="p-4 bg-muted/50 rounded-lg">
-                        <div className="flex items-start gap-3">
-                          <Mail className="h-5 w-5 text-primary mt-0.5" />
-                          <div>
-                            <p className="font-medium">Email Delivery</p>
-                            <p className="text-sm text-muted-foreground">
-                              The report will be sent as a PDF attachment to the email address you provide. 
-                              You'll also receive a link to download the report directly. Your email is not stored.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <p className="text-xs text-muted-foreground">
-                  Report generated on: {new Date().toLocaleString()}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Reference ID: CCE-{Math.random().toString(36).substring(2, 10).toUpperCase()}
-                </p>
-              </CardFooter>
-            </Card>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
         </div>
       </main>

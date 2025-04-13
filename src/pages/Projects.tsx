@@ -22,7 +22,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase, ProjectDetail } from '@/lib/supabase';
-import { PlusCircle, Search, Building, MoreVertical, Edit, Trash2, Eye, ArrowRight } from 'lucide-react';
+import { 
+  PlusCircle, 
+  Search, 
+  Building, 
+  MoreVertical, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  ArrowRight 
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { 
   Dialog,
@@ -61,17 +70,8 @@ const Projects = () => {
   
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to view your projects",
-        variant: "destructive"
-      });
-      navigate('/auth');
-    } else {
-      fetchProjects();
-    }
-  }, [user, navigate, toast]);
+    fetchProjects();
+  }, [toast]);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -134,8 +134,7 @@ const Projects = () => {
             location: newProject.location,
             construction_type: newProject.constructionType,
             area: newProject.area,
-            floors: newProject.floors,
-            user_id: user?.id
+            floors: newProject.floors
           }
         ])
         .select();
@@ -159,7 +158,7 @@ const Projects = () => {
       });
       
       // Navigate to the estimate page for the new project
-      navigate(`/estimate/${data[0].id}`);
+      navigate(`/dashboard/${data[0].id}`);
       
     } catch (error: any) {
       toast({
@@ -170,8 +169,12 @@ const Projects = () => {
     }
   };
   
+  const handleViewProject = (projectId: string) => {
+    navigate(`/dashboard/${projectId}`);
+  };
+  
   const filteredProjects = projects.filter(project => 
-    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     project.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     project.construction_type?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -322,17 +325,9 @@ const Projects = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link to={`/estimate/${project.id}`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            <span>Edit</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to={`/dashboard/${project.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            <span>View Details</span>
-                          </Link>
+                        <DropdownMenuItem onClick={() => handleViewProject(project.id)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          <span>View Details</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive focus:text-destructive"
@@ -360,15 +355,15 @@ const Projects = () => {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-muted-foreground">Created</span>
-                        <span>{format(new Date(project.created_at), 'dd MMM yyyy')}</span>
+                        <span>{project.created_at ? format(new Date(project.created_at), 'dd MMM yyyy') : 'Unknown'}</span>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild className="w-full gap-2">
-                      <Link to={`/dashboard/${project.id}`}>
+                    <Button asChild className="w-full gap-2" onClick={() => handleViewProject(project.id)}>
+                      <div>
                         View Dashboard <ArrowRight className="h-4 w-4" />
-                      </Link>
+                      </div>
                     </Button>
                   </CardFooter>
                 </Card>

@@ -8,6 +8,138 @@ export interface ProjectDetails {
   floors: number;
 }
 
+export interface MaterialQuantities {
+  sand: {
+    type: string;
+    amount: number;
+  };
+  cement: {
+    type: string;
+    amount: number;
+  };
+  aggregate: {
+    type: string;
+    amount: number;
+  };
+  steel: {
+    type: string;
+    amount: number;
+  };
+  bricks: {
+    type: string;
+    amount: number;
+  };
+  wood: {
+    type: string;
+    amount: number;
+  };
+  paint: {
+    type: string;
+    amount: number;
+  };
+  electrical: {
+    components: string;
+    complexity: string;
+  };
+  plumbing: {
+    components: string;
+    complexity: string;
+  };
+  fixtures: {
+    type: string;
+    count: number;
+  };
+  windows: {
+    type: string;
+    count: number;
+  };
+  doors: {
+    type: string;
+    count: number;
+  };
+  roofing: {
+    type: string;
+    area: number;
+  };
+  flooring: {
+    type: string;
+    area: number;
+  };
+  glasswork: {
+    type: string;
+    area: number;
+  };
+  tilesMarble: {
+    type: string;
+    area: number;
+  };
+}
+
+export interface LaborDetails {
+  masons: {
+    count: number;
+    days: number;
+  };
+  carpenters: {
+    count: number;
+    days: number;
+  };
+  painters: {
+    count: number;
+    days: number;
+  };
+  electricians: {
+    count: number;
+    days: number;
+  };
+  plumbers: {
+    count: number;
+    days: number;
+  };
+  helpers: {
+    count: number;
+    days: number;
+  };
+  supervisors: {
+    count: number;
+    days: number;
+  };
+}
+
+export interface OverheadDetails {
+  permits: {
+    type: string;
+    complexity: string;
+  };
+  design: {
+    complexity: string;
+    revisions: number;
+  };
+  insurance: {
+    coverage: string;
+    duration: number;
+  };
+  equipment: {
+    type: string;
+    duration: number;
+  };
+  transportation: {
+    distance: number;
+    frequency: number;
+  };
+  utilities: {
+    type: string;
+    duration: number;
+  };
+  sitePreparation: {
+    complexity: string;
+    area: number;
+  };
+  contingency: {
+    percentage: number;
+  };
+}
+
 export interface MaterialCosts {
   cement: number;
   sand: number;
@@ -84,6 +216,9 @@ export interface CostBreakdown {
 
 export interface EstimatorState {
   project: ProjectDetails;
+  materialQuantities: MaterialQuantities;
+  laborDetails: LaborDetails;
+  overheadDetails: OverheadDetails;
   materials: MaterialCosts;
   labor: LaborCosts;
   overhead: OverheadCosts;
@@ -92,4 +227,26 @@ export interface EstimatorState {
   isCalculated: boolean;
   isOptimized: boolean;
   errors: Record<string, string>;
+}
+
+export interface MaterialUnitCosts {
+  [key: string]: {
+    [key: string]: number;
+  };
+}
+
+export interface LaborUnitCosts {
+  [key: string]: number;
+}
+
+export interface OverheadUnitCosts {
+  [key: string]: {
+    [key: string]: number;
+  };
+}
+
+export interface UnitCostDatabase {
+  materials: MaterialUnitCosts;
+  labor: LaborUnitCosts;
+  overhead: OverheadUnitCosts;
 }
