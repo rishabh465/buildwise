@@ -1,6 +1,8 @@
 
 import { supabase } from './supabase';
 import type { OptimizationSuggestion, Prediction } from './supabase';
+import { dbToAppOptimization, appToDbOptimization } from './adapters';
+import type { OptimizationSuggestion as AppOptimizationSuggestion } from '@/types/estimator';
 
 interface ProjectData {
   project: any;
@@ -27,7 +29,7 @@ export const generatePrediction = async (projectData: ProjectData): Promise<Pred
   }
 };
 
-export const generateOptimizations = async (projectData: ProjectData): Promise<OptimizationSuggestion[] | null> => {
+export const generateOptimizations = async (projectData: ProjectData): Promise<AppOptimizationSuggestion[] | null> => {
   try {
     const { data, error } = await supabase.functions.invoke('gemini-optimize', {
       body: { projectData }
@@ -37,7 +39,8 @@ export const generateOptimizations = async (projectData: ProjectData): Promise<O
       throw new Error(error.message || 'Failed to generate optimizations');
     }
     
-    return data.optimizations;
+    // Convert DB format to app format
+    return data.optimizations.map(dbToAppOptimization);
   } catch (error) {
     console.error('Error generating optimizations:', error);
     return null;
@@ -67,18 +70,13 @@ export const savePredictionToDatabase = async (projectId: string, prediction: Pr
   }
 };
 
-export const saveOptimizationsToDatabase = async (projectId: string, optimizations: OptimizationSuggestion[]): Promise<void> => {
+export const saveOptimizationsToDatabase = async (projectId: string, optimizations: AppOptimizationSuggestion[]): Promise<void> => {
   try {
-    const optimizationsToInsert = optimizations.map(opt => ({
-      project_id: projectId,
-      title: opt.title,
-      description: opt.description,
-      category: opt.category,
-      potential_savings: opt.potentialSavings,
-      implementation_complexity: opt.implementationComplexity,
-      time_impact: opt.timeImpact,
-      quality_impact: opt.qualityImpact
-    }));
+    const optimizationsToInsert = optimizations.map(opt => {
+      const dbOpt = appToDbOptimization(opt);
+      dbOpt.project_id = projectId;
+      return dbOpt;
+    });
     
     const { error } = await supabase
       .from('project_optimizations')
