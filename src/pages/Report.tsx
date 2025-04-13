@@ -27,7 +27,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import autoTable from 'jspdf-autotable';
 
-// Extend jsPDF with autoTable
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: typeof autoTable;
@@ -73,10 +72,8 @@ const Report = () => {
 
   const handleDownload = () => {
     try {
-      // Create a new jsPDF instance
       const doc = new jsPDF();
       
-      // Set document properties
       doc.setProperties({
         title: 'BuildWise Construction Cost Report',
         subject: state.project.name,
@@ -84,12 +81,10 @@ const Report = () => {
         creator: 'BuildWise App'
       });
       
-      // Add header
       doc.setTextColor(41, 37, 36);
       doc.setFontSize(22);
       doc.text('BuildWise Construction Cost Report', 105, 20, { align: 'center' });
       
-      // Add project details
       doc.setFontSize(14);
       doc.text('Project Details', 20, 35);
       
@@ -100,11 +95,9 @@ const Report = () => {
       doc.text(`Area: ${state.project.area} sq. ft.`, 20, 66);
       doc.text(`Floors: ${state.project.floors}`, 20, 73);
       
-      // Add cost summary
       doc.setFontSize(14);
       doc.text('Cost Summary', 20, 85);
       
-      // Cost summary table
       doc.autoTable({
         startY: 90,
         head: [['Category', 'Amount']],
@@ -119,7 +112,6 @@ const Report = () => {
         styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
       });
       
-      // Add material breakdown
       const materialItems = Object.entries(state.breakdown.materials.items)
         .filter(([_, value]) => value > 0)
         .map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), formatCurrency(value)]);
@@ -139,7 +131,6 @@ const Report = () => {
         });
       }
       
-      // Add labor breakdown
       const laborItems = Object.entries(state.breakdown.labor.items)
         .filter(([_, value]) => value > 0)
         .map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), formatCurrency(value)]);
@@ -176,7 +167,6 @@ const Report = () => {
         }
       }
       
-      // Add overhead breakdown
       const overheadItems = Object.entries(state.breakdown.overhead.items)
         .filter(([_, value]) => value > 0)
         .map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), formatCurrency(value)]);
@@ -213,7 +203,6 @@ const Report = () => {
         }
       }
 
-      // Add optimization suggestions if available
       if (state.optimization && state.optimization.suggestions.length > 0) {
         doc.addPage();
         doc.setFontSize(16);
@@ -226,10 +215,6 @@ const Report = () => {
         doc.text(`Original Cost: ${formatCurrency(state.breakdown.total)}`, 20, 40);
         doc.text(`Potential Savings: ${formatCurrency(state.optimization.potentialSavings)}`, 20, 47);
         doc.text(`Optimized Cost: ${formatCurrency(state.optimization.optimizedTotal)}`, 20, 54);
-        
-        // Suggestions table
-        doc.setFontSize(14);
-        doc.text('Detailed Recommendations', 20, 65);
         
         const suggestionRows = state.optimization.suggestions.map((s) => [
           s.title,
@@ -247,7 +232,6 @@ const Report = () => {
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
         });
         
-        // Add detailed descriptions of suggestions
         const lastY = (doc as any).lastAutoTable?.finalY || 70;
         const newY = lastY + 15;
         
@@ -266,7 +250,6 @@ const Report = () => {
             doc.setFontSize(12);
             doc.text(`${i + 1}. ${s.title}`, 20, detailY);
             
-            // Word wrap for description
             const splitDescription = doc.splitTextToSize(s.description, 170);
             doc.setFontSize(10);
             doc.text(splitDescription, 25, detailY + 7);
@@ -287,7 +270,6 @@ const Report = () => {
             doc.setFontSize(12);
             doc.text(`${i + 1}. ${s.title}`, 20, detailY);
             
-            // Word wrap for description
             const splitDescription = doc.splitTextToSize(s.description, 170);
             doc.setFontSize(10);
             doc.text(splitDescription, 25, detailY + 7);
@@ -297,7 +279,6 @@ const Report = () => {
         }
       }
       
-      // Add footer with report generation date
       const pageCount = doc.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -308,7 +289,6 @@ const Report = () => {
         doc.text(`Page ${i} of ${pageCount}`, 190, doc.internal.pageSize.height - 10, { align: 'right' });
       }
 
-      // Save the PDF
       doc.save(`${state.project.name.replace(/\s+/g, '_')}_cost_report.pdf`);
       
       toast({
