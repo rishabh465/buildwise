@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -111,7 +110,7 @@ const Report = () => {
         headStyles: { fillColor: [139, 92, 246] },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-      });
+      } as any);
       
       const materialItems = Object.entries(state.breakdown.materials.items)
         .filter(([_, value]) => value > 0)
@@ -129,7 +128,7 @@ const Report = () => {
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        });
+        } as any);
       }
       
       const laborItems = Object.entries(state.breakdown.labor.items)
@@ -152,7 +151,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
+          } as any);
         } else {
           doc.setFontSize(14);
           doc.text('Labor Cost Breakdown', 20, newY);
@@ -164,7 +163,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
+          } as any);
         }
       }
       
@@ -188,7 +187,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
+          } as any);
         } else {
           doc.setFontSize(14);
           doc.text('Overhead Cost Breakdown', 20, newY);
@@ -200,7 +199,7 @@ const Report = () => {
             headStyles: { fillColor: [139, 92, 246] },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
+          } as any);
         }
       }
 
@@ -231,7 +230,7 @@ const Report = () => {
           headStyles: { fillColor: [139, 92, 246] },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        });
+        } as any);
         
         const lastY = (doc as any).lastAutoTable?.finalY || 70;
         const newY = lastY + 15;
