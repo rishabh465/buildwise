@@ -26,7 +26,7 @@ const Index = () => {
                 </Badge>
                 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                  Smarter <span className="text-primary">construction cost</span> Optimization with AI
+                  Smarter <span className="text-primary">construction cost</span> optimization with AI
                 </h1>
                 
                 <p className="text-lg text-muted-foreground max-w-md">
