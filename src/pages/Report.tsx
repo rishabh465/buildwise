@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jsPDF } from 'jspdf';
+import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -26,12 +25,10 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import autoTable from 'jspdf-autotable';
 
-// Extend jsPDF with autoTable
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: typeof autoTable;
+    autoTable: (options: any) => jsPDF;
   }
 }
 
@@ -73,257 +70,64 @@ const Report = () => {
   };
 
   const handleDownload = () => {
-    try {
-      // Create a new jsPDF instance
-      const doc = new jsPDF();
+    const doc = new jsPDF();
+    
+    doc.setTextColor(50);
+    doc.setFontSize(18);
+    doc.text('Project Cost Report', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text(`Project Name: ${state.project.name}`, 20, 40, { align: 'left' });
+    doc.text(`Location: ${state.project.location}`, 20, 50, { align: 'left' });
+    doc.text(`Construction Type: ${state.project.constructionType}`, 20, 60, { align: 'left' });
+    
+    doc.autoTable({
+      startY: 80,
+      head: [['Category', 'Cost']],
+      body: [
+        ['Total Project Cost', formatCurrency(state.breakdown.total)],
+        ['Materials', formatCurrency(state.breakdown.materials.total)],
+        ['Labor', formatCurrency(state.breakdown.labor.total)],
+        ['Overhead', formatCurrency(state.breakdown.overhead.total)],
+      ],
+    });
+
+    if (state.optimization) {
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.text('Cost Optimization Suggestions', 105, 20, { align: 'center' });
       
-      // Set document properties
-      doc.setProperties({
-        title: 'BuildWise Construction Cost Report',
-        subject: state.project.name,
-        author: 'BuildWise App',
-        creator: 'BuildWise App'
-      });
-      
-      // Add header
-      doc.setTextColor(41, 37, 36);
-      doc.setFontSize(22);
-      doc.text('BuildWise Construction Cost Report', 105, 20, { align: 'center' });
-      
-      // Add project details
       doc.setFontSize(14);
-      doc.text('Project Details', 20, 35);
+      doc.text('Potential Savings Overview', 20, 40);
       
       doc.setFontSize(12);
-      doc.text(`Project Name: ${state.project.name}`, 20, 45);
-      doc.text(`Location: ${state.project.location}`, 20, 52);
-      doc.text(`Construction Type: ${state.project.constructionType}`, 20, 59);
-      doc.text(`Area: ${state.project.area} sq. ft.`, 20, 66);
-      doc.text(`Floors: ${state.project.floors}`, 20, 73);
+      doc.text(`Original Cost: ${formatCurrency(state.breakdown.total)}`, 20, 55);
+      doc.text(`Potential Savings: ${formatCurrency(state.optimization.potentialSavings)}`, 20, 65);
+      doc.text(`Optimized Cost: ${formatCurrency(state.optimization.optimizedTotal)}`, 20, 75);
       
-      // Add cost summary
       doc.setFontSize(14);
-      doc.text('Cost Summary', 20, 85);
+      doc.text('Detailed Suggestions', 20, 95);
       
-      // Cost summary table
+      const suggestionData = state.optimization.suggestions.map((suggestion, index) => [
+        `${index + 1}. ${suggestion.title}`,
+        suggestion.category,
+        formatCurrency(suggestion.potentialSavings),
+        suggestion.implementationComplexity
+      ]);
+      
       doc.autoTable({
-        startY: 90,
-        head: [['Category', 'Amount']],
-        body: [
-          ['Materials', formatCurrency(state.breakdown.materials.total)],
-          ['Labor', formatCurrency(state.breakdown.labor.total)],
-          ['Overhead', formatCurrency(state.breakdown.overhead.total)],
-          ['Total Project Cost', formatCurrency(state.breakdown.total)]
-        ],
-        headStyles: { fillColor: [139, 92, 246] },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-      });
-      
-      // Add material breakdown
-      const materialItems = Object.entries(state.breakdown.materials.items)
-        .filter(([_, value]) => value > 0)
-        .map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), formatCurrency(value)]);
-        
-      if (materialItems.length > 0) {
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text('Material Cost Breakdown', 20, 20);
-        
-        doc.autoTable({
-          startY: 25,
-          head: [['Material', 'Cost']],
-          body: materialItems,
-          headStyles: { fillColor: [139, 92, 246] },
-          alternateRowStyles: { fillColor: [248, 250, 252] },
-          styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        });
-      }
-      
-      // Add labor breakdown
-      const laborItems = Object.entries(state.breakdown.labor.items)
-        .filter(([_, value]) => value > 0)
-        .map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), formatCurrency(value)]);
-        
-      if (laborItems.length > 0) {
-        const lastY = (doc as any).lastAutoTable?.finalY || 25;
-        const newY = lastY + 15;
-        
-        if (newY > 250 && materialItems.length > 0) {
-          doc.addPage();
-          doc.setFontSize(14);
-          doc.text('Labor Cost Breakdown', 20, 20);
-          
-          doc.autoTable({
-            startY: 25,
-            head: [['Labor Category', 'Cost']],
-            body: laborItems,
-            headStyles: { fillColor: [139, 92, 246] },
-            alternateRowStyles: { fillColor: [248, 250, 252] },
-            styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
-        } else {
-          doc.setFontSize(14);
-          doc.text('Labor Cost Breakdown', 20, newY);
-          
-          doc.autoTable({
-            startY: newY + 5,
-            head: [['Labor Category', 'Cost']],
-            body: laborItems,
-            headStyles: { fillColor: [139, 92, 246] },
-            alternateRowStyles: { fillColor: [248, 250, 252] },
-            styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
-        }
-      }
-      
-      // Add overhead breakdown
-      const overheadItems = Object.entries(state.breakdown.overhead.items)
-        .filter(([_, value]) => value > 0)
-        .map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), formatCurrency(value)]);
-        
-      if (overheadItems.length > 0) {
-        const lastY = (doc as any).lastAutoTable?.finalY || 25;
-        const newY = lastY + 15;
-        
-        if (newY > 250) {
-          doc.addPage();
-          doc.setFontSize(14);
-          doc.text('Overhead Cost Breakdown', 20, 20);
-          
-          doc.autoTable({
-            startY: 25,
-            head: [['Overhead Category', 'Cost']],
-            body: overheadItems,
-            headStyles: { fillColor: [139, 92, 246] },
-            alternateRowStyles: { fillColor: [248, 250, 252] },
-            styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
-        } else {
-          doc.setFontSize(14);
-          doc.text('Overhead Cost Breakdown', 20, newY);
-          
-          doc.autoTable({
-            startY: newY + 5,
-            head: [['Overhead Category', 'Cost']],
-            body: overheadItems,
-            headStyles: { fillColor: [139, 92, 246] },
-            alternateRowStyles: { fillColor: [248, 250, 252] },
-            styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-          });
-        }
-      }
-
-      // Add optimization suggestions if available
-      if (state.optimization && state.optimization.suggestions.length > 0) {
-        doc.addPage();
-        doc.setFontSize(16);
-        doc.text('Cost Optimization Recommendations', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(14);
-        doc.text('Potential Savings Summary', 20, 30);
-        
-        doc.setFontSize(12);
-        doc.text(`Original Cost: ${formatCurrency(state.breakdown.total)}`, 20, 40);
-        doc.text(`Potential Savings: ${formatCurrency(state.optimization.potentialSavings)}`, 20, 47);
-        doc.text(`Optimized Cost: ${formatCurrency(state.optimization.optimizedTotal)}`, 20, 54);
-        
-        // Suggestions table
-        doc.setFontSize(14);
-        doc.text('Detailed Recommendations', 20, 65);
-        
-        const suggestionRows = state.optimization.suggestions.map((s) => [
-          s.title,
-          s.category,
-          formatCurrency(s.potentialSavings),
-          s.implementationComplexity.charAt(0).toUpperCase() + s.implementationComplexity.slice(1)
-        ]);
-        
-        doc.autoTable({
-          startY: 70,
-          head: [['Recommendation', 'Category', 'Potential Savings', 'Complexity']],
-          body: suggestionRows,
-          headStyles: { fillColor: [139, 92, 246] },
-          alternateRowStyles: { fillColor: [248, 250, 252] },
-          styles: { lineWidth: 0.1, lineColor: [211, 211, 211] }
-        });
-        
-        // Add detailed descriptions of suggestions
-        const lastY = (doc as any).lastAutoTable?.finalY || 70;
-        const newY = lastY + 15;
-        
-        if (newY > 250) {
-          doc.addPage();
-          doc.setFontSize(14);
-          doc.text('Recommendation Details', 20, 20);
-          let detailY = 30;
-          
-          state.optimization.suggestions.forEach((s, i) => {
-            if (detailY > 250) {
-              doc.addPage();
-              detailY = 20;
-            }
-            
-            doc.setFontSize(12);
-            doc.text(`${i + 1}. ${s.title}`, 20, detailY);
-            
-            // Word wrap for description
-            const splitDescription = doc.splitTextToSize(s.description, 170);
-            doc.setFontSize(10);
-            doc.text(splitDescription, 25, detailY + 7);
-            
-            detailY += 10 + (splitDescription.length * 5);
-          });
-        } else {
-          doc.setFontSize(14);
-          doc.text('Recommendation Details', 20, newY);
-          let detailY = newY + 10;
-          
-          state.optimization.suggestions.forEach((s, i) => {
-            if (detailY > 250) {
-              doc.addPage();
-              detailY = 20;
-            }
-            
-            doc.setFontSize(12);
-            doc.text(`${i + 1}. ${s.title}`, 20, detailY);
-            
-            // Word wrap for description
-            const splitDescription = doc.splitTextToSize(s.description, 170);
-            doc.setFontSize(10);
-            doc.text(splitDescription, 25, detailY + 7);
-            
-            detailY += 10 + (splitDescription.length * 5);
-          });
-        }
-      }
-      
-      // Add footer with report generation date
-      const pageCount = doc.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        
-        doc.setFontSize(8);
-        doc.setTextColor(128, 128, 128);
-        doc.text(`Report generated on: ${new Date().toLocaleString()}`, 20, doc.internal.pageSize.height - 10);
-        doc.text(`Page ${i} of ${pageCount}`, 190, doc.internal.pageSize.height - 10, { align: 'right' });
-      }
-
-      // Save the PDF
-      doc.save(`${state.project.name.replace(/\s+/g, '_')}_cost_report.pdf`);
-      
-      toast({
-        title: "Report downloaded",
-        description: "Your project cost report has been saved as a PDF.",
-      });
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast({
-        variant: "destructive",
-        title: "Download Error",
-        description: "Failed to generate the PDF report. Please try again.",
+        startY: 100,
+        head: [['Suggestion', 'Category', 'Savings', 'Complexity']],
+        body: suggestionData
       });
     }
+
+    doc.save('project_cost_report.pdf');
+    
+    toast({
+      title: "Report downloaded",
+      description: "Your project cost report has been saved.",
+    });
   };
 
   const handleEmailReport = () => {

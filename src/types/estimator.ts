@@ -8,93 +8,6 @@ export interface ProjectDetails {
   floors: number;
 }
 
-export interface MaterialDetails {
-  // Sand
-  sandType: string;
-  sandAmount: number;
-  
-  // Aggregate
-  aggregateType: string;
-  aggregateAmount: number;
-  
-  // Cement
-  cementType: string;
-  cementAmount: number;
-  
-  // Steel
-  steelType: string;
-  steelAmount: number;
-  
-  // Bricks
-  brickType: string;
-  brickAmount: number;
-  
-  // Wood
-  woodType: string;
-  woodAmount: number;
-  
-  // Paint
-  paintType: string;
-  paintAmount: number;
-  
-  // Electrical
-  electricalFixtureType: string;
-  electricalFixtureAmount: number;
-  
-  // Plumbing
-  plumbingFixtureType: string;
-  plumbingFixtureAmount: number;
-  
-  // Fixtures
-  fixtureType: string;
-  fixtureAmount: number;
-  
-  // Windows
-  windowType: string;
-  windowAmount: number;
-  
-  // Doors
-  doorType: string;
-  doorAmount: number;
-  
-  // Roofing
-  roofingType: string;
-  roofingAmount: number;
-  
-  // Flooring
-  flooringType: string;
-  flooringAmount: number;
-  
-  // Glasswork
-  glassType: string;
-  glassAmount: number;
-  
-  // Tiles/Marble
-  tilesType: string;
-  tilesAmount: number;
-}
-
-export interface LaborDetails {
-  masons: number;
-  carpenters: number;
-  painters: number;
-  electricians: number;
-  plumbers: number;
-  helpers: number;
-  supervisors: number;
-}
-
-export interface OverheadDetails {
-  permitType: string;
-  designComplexity: string;
-  insuranceType: string;
-  equipmentNeeded: string[];
-  transportationDistance: number;
-  utilitiesEstimate: string;
-  sitePreparationType: string;
-  contingencyPercentage: number;
-}
-
 export interface MaterialCosts {
   cement: number;
   sand: number;
@@ -171,9 +84,9 @@ export interface CostBreakdown {
 
 export interface EstimatorState {
   project: ProjectDetails;
-  materials: MaterialDetails;
-  labor: LaborDetails;
-  overhead: OverheadDetails;
+  materials: MaterialCosts;
+  labor: LaborCosts;
+  overhead: OverheadCosts;
   breakdown: CostBreakdown | null;
   optimization: CostOptimization | null;
   isCalculated: boolean;
