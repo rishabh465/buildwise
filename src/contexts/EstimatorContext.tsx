@@ -1,19 +1,4 @@
-
 import React, { createContext, useContext, useState } from 'react';
-import { 
-  EstimatorState, 
-  ProjectDetails, 
-  MaterialCosts, 
-  LaborCosts, 
-  OverheadCosts,
-  CostBreakdown,
-  CostOptimization,
-  OptimizationSuggestion,
-  MaterialQuantities,
-  LaborDetails,
-  OverheadDetails,
-  UnitCostDatabase
-} from '@/types/estimator';
 import { useToast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -641,7 +626,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         // Make sure optimized total is never negative
         const optimizedTotal = Math.max(state.breakdown.total - potentialSavings, state.breakdown.total * 0.6);
 
-        const optimization: CostOptimization = {
+        const optimization = {
           suggestions,
           potentialSavings,
           optimizedTotal
