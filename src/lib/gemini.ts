@@ -67,7 +67,7 @@ export const savePredictionToDatabase = async (projectId: string, prediction: Pr
   }
 };
 
-export const saveOptimizationsToDatabase = async (projectId: string, optimizations: OptimizationSuggestion[]): Promise<void> => {
+export const saveOptimizationsToDatabase = async (projectId: string, optimizations: import('@/types/estimator').OptimizationSuggestion[]): Promise<void> => {
   try {
     const optimizationsToInsert = optimizations.map(opt => ({
       project_id: projectId,

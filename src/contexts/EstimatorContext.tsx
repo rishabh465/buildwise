@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { 
   EstimatorState, 
@@ -8,15 +7,15 @@ import {
   OverheadDetails,
   CostBreakdown,
   CostOptimization,
-  OptimizationSuggestion
+  OptimizationSuggestion as AppOptimizationSuggestion
 } from '@/types/estimator';
 import { useToast } from '@/components/ui/use-toast';
 import { calculateCostBreakdown } from '@/lib/costCalculator';
-import { generateOptimizations, generatePrediction, savePredictionToDatabase, saveOptimizationsToDatabase } from '@/lib/gemini';
+import { generateOptimizations, generatePrediction, savePredictionToDatabase, saveOptimizationsToDatabase, calculateSafeOptimizedTotal } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { OptimizationSuggestion as DBOptimizationSuggestion } from '@/lib/supabase';
 
-// Default values
 const defaultProject: ProjectDetails = {
   name: '',
   location: '',
@@ -210,8 +209,8 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         description: "Analyzing your project data with AI...",
       });
       
-      // In real implementation we call the AI service
-      const optimizations = await generateOptimizations({
+      // Call the AI service
+      const dbOptimizations = await generateOptimizations({
         project: state.project,
         materials: state.materials,
         labor: state.labor,
@@ -219,15 +218,28 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         breakdown: state.breakdown
       });
       
-      if (!optimizations) {
+      if (!dbOptimizations) {
         throw new Error("Failed to generate optimizations");
       }
+
+      // Transform DB optimizations to app format
+      const optimizations: AppOptimizationSuggestion[] = dbOptimizations.map(opt => ({
+        id: opt.id,
+        title: opt.title,
+        description: opt.description,
+        category: opt.category as any,
+        potentialSavings: opt.potential_savings,
+        implementationComplexity: opt.implementation_complexity as any,
+        timeImpact: opt.time_impact as any,
+        qualityImpact: opt.quality_impact as any
+      }));
 
       // Calculate potential savings and optimized total
       const potentialSavings = optimizations.reduce((total, suggestion) => 
         total + suggestion.potentialSavings, 0);
       
-      const optimizedTotal = state.breakdown.total - potentialSavings;
+      // Use safe calculation
+      const optimizedTotal = calculateSafeOptimizedTotal(state.breakdown.total, potentialSavings);
 
       const optimization: CostOptimization = {
         suggestions: optimizations,
@@ -402,14 +414,14 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
       
       // Get optimizations
-      const { data: optimizations, error: optimizationsError } = await supabase
+      const { data: dbOptimizations, error: optimizationsError } = await supabase
         .from('project_optimizations')
         .select('*')
         .eq('project_id', projectId);
         
-      if (!optimizationsError && optimizations && optimizations.length > 0) {
+      if (!optimizationsError && dbOptimizations && dbOptimizations.length > 0) {
         // Transform DB optimizations to our app format
-        const suggestions: OptimizationSuggestion[] = optimizations.map(opt => ({
+        const suggestions: AppOptimizationSuggestion[] = dbOptimizations.map(opt => ({
           id: opt.id,
           title: opt.title,
           description: opt.description,
@@ -423,7 +435,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const potentialSavings = suggestions.reduce((total, suggestion) => 
           total + suggestion.potentialSavings, 0);
           
-        const optimizedTotal = (prediction?.predicted_total || 0) - potentialSavings;
+        const optimizedTotal = calculateSafeOptimizedTotal(prediction?.predicted_total || 0, potentialSavings);
         
         setState(prev => ({
           ...prev,

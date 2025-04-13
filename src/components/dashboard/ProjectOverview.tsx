@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEstimator } from '@/contexts/EstimatorContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, 
@@ -66,6 +65,39 @@ const formatTooltipValue = (value: number) => {
     currency: 'INR',
     maximumFractionDigits: 0
   }).format(value);
+};
+
+const CustomTreemapContent = (props: any) => {
+  const { depth, x, y, width, height, index, name, value } = props;
+  const color = EXTENDED_COLORS[index % EXTENDED_COLORS.length];
+  
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        style={{
+          fill: color,
+          stroke: '#fff',
+          strokeWidth: 2 / (depth + 1e-10),
+          strokeOpacity: 1 / (depth + 1e-10),
+        }}
+      />
+      {width > 30 && height > 20 && (
+        <text
+          x={x + width / 2}
+          y={y + height / 2}
+          textAnchor="middle"
+          fill="#fff"
+          fontSize={12}
+        >
+          {name}
+        </text>
+      )}
+    </g>
+  );
 };
 
 const ProjectOverview = () => {
@@ -265,7 +297,7 @@ const ProjectOverview = () => {
                   top: 5,
                   right: 30,
                   left: 20,
-                  bottom: 65,
+                  bottom: 70,
                 }}
               >
                 <XAxis 
@@ -433,35 +465,7 @@ const ProjectOverview = () => {
                 ratio={4/3}
                 stroke="#fff"
                 fill="#8884d8"
-                content={({ root, depth, x, y, width, height, index, payload, colors, rank, name }) => {
-                  return (
-                    <g>
-                      <rect
-                        x={x}
-                        y={y}
-                        width={width}
-                        height={height}
-                        style={{
-                          fill: treemapData[index]?.color || EXTENDED_COLORS[index % EXTENDED_COLORS.length],
-                          stroke: '#fff',
-                          strokeWidth: 2 / (depth + 1e-10),
-                          strokeOpacity: 1 / (depth + 1e-10),
-                        }}
-                      />
-                      {depth === 1 && (
-                        <text
-                          x={x + width / 2}
-                          y={y + height / 2}
-                          textAnchor="middle"
-                          fill="#fff"
-                          fontSize={12}
-                        >
-                          {name}
-                        </text>
-                      )}
-                    </g>
-                  );
-                }}
+                content={CustomTreemapContent}
               >
                 <Tooltip 
                   formatter={(value: number) => formatTooltipValue(value)} 

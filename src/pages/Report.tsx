@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -209,7 +208,7 @@ const Report = () => {
         doc.setFontSize(12);
         doc.text(`Original Cost: ${formatCurrency(state.breakdown.total)}`, 20, 40);
         doc.text(`Potential Savings: ${formatCurrency(state.optimization.potentialSavings)}`, 20, 47);
-        doc.text(`Optimized Cost: ${formatCurrency(state.breakdown.total - state.optimization.potentialSavings)}`, 20, 54);
+        doc.text(`Optimized Cost: ${formatCurrency(state.optimization.optimizedTotal)}`, 20, 54);
         
         // Suggestions table
         doc.setFontSize(14);
