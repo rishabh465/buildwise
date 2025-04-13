@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -176,8 +175,9 @@ ${index + 1}. ${suggestion.title}
       }, 100);
       
       toast({
-        title: "Report downloaded successfully",
-        description: "Your construction cost report has been saved as a text file.",
+        variant: "default",
+        title: "Report Generated",
+        description: "Your report has been generated successfully.",
       });
     } catch (error) {
       console.error("Error downloading report:", error);

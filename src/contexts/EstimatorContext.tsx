@@ -1,6 +1,20 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
+import { 
+  ProjectDetails,
+  MaterialQuantities,
+  LaborDetails,
+  OverheadDetails,
+  MaterialCosts,
+  LaborCosts,
+  OverheadCosts,
+  CostBreakdown,
+  EstimatorState,
+  UnitCostDatabase,
+  OptimizationSuggestion
+} from '@/types/estimator';
 
 // Default values
 const defaultProject: ProjectDetails = {
@@ -340,7 +354,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const getMaterialOptions = (material: string): string[] => {
     if (material in unitCostDatabase.materials) {
-      return Object.keys(unitCostDatabase.materials[material]);
+      return Object.keys(unitCostDatabase.materials[material as keyof typeof unitCostDatabase.materials]);
     }
     return [];
   };
@@ -360,8 +374,8 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const materialItems: Record<string, number> = {};
       
       Object.entries(materials).forEach(([key, value]) => {
-        materialItems[key] = value;
-        materialTotal += value;
+        materialItems[key] = value as number;
+        materialTotal += value as number;
       });
 
       // Calculate labor costs
@@ -369,8 +383,8 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const laborItems: Record<string, number> = {};
       
       Object.entries(labor).forEach(([key, value]) => {
-        laborItems[key] = value;
-        laborTotal += value;
+        laborItems[key] = value as number;
+        laborTotal += value as number;
       });
 
       // Calculate overhead costs
@@ -378,8 +392,8 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const overheadItems: Record<string, number> = {};
       
       Object.entries(overhead).forEach(([key, value]) => {
-        overheadItems[key] = value;
-        overheadTotal += value;
+        overheadItems[key] = value as number;
+        overheadTotal += value as number;
       });
 
       // Calculate total cost
@@ -502,7 +516,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       materialQuantities.tilesMarble.area;
     
     // Miscellaneous (calculated as 2% of total material cost)
-    const subtotal = Object.values(materials).reduce((sum, cost) => sum + cost, 0);
+    const subtotal = Object.values(materials).reduce((sum, cost) => sum + (cost as number), 0);
     materials.miscellaneous = subtotal * 0.02;
     
     return materials;
@@ -578,9 +592,9 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const materialCosts = calculateMaterialCosts();
     const laborCosts = calculateLaborCosts();
     
-    const materialTotal = Object.values(materialCosts).reduce((sum, cost) => sum + cost, 0);
-    const laborTotal = Object.values(laborCosts).reduce((sum, cost) => sum + cost, 0);
-    const overheadSubtotal = Object.values(overhead).reduce((sum, cost) => sum + cost, 0);
+    const materialTotal = Object.values(materialCosts).reduce((sum, cost) => sum + (cost as number), 0);
+    const laborTotal = Object.values(laborCosts).reduce((sum, cost) => sum + (cost as number), 0);
+    const overheadSubtotal = Object.values(overhead).reduce((sum, cost) => sum + (cost as number), 0);
     
     // Contingency (based on percentage of total project cost)
     overhead.contingency = (materialTotal + laborTotal + overheadSubtotal) * 
@@ -624,7 +638,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const potentialSavings = suggestions.reduce((total, suggestion) => total + suggestion.potentialSavings, 0);
         
         // Make sure optimized total is never negative
-        const optimizedTotal = Math.max(state.breakdown.total - potentialSavings, state.breakdown.total * 0.6);
+        const optimizedTotal = Math.max(state.breakdown?.total as number - potentialSavings, (state.breakdown?.total as number) * 0.6);
 
         const optimization = {
           suggestions,
@@ -809,7 +823,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     
     // If we have high design costs
-    if (overhead.design > breakdown.total * 0.05) {
+    if (overhead.design > (breakdown.total * 0.05)) {
       suggestions.push({
         id: uuidv4(),
         category: 'design',
@@ -823,7 +837,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     
     // If flooring is expensive
-    if (materials.flooring > breakdown.materials.total * 0.1 && materialQuantities.flooring.type === 'Marble') {
+    if (materials.flooring > (breakdown.materials.total * 0.1) && materialQuantities.flooring.type === 'Marble') {
       suggestions.push({
         id: uuidv4(),
         category: 'materials',
