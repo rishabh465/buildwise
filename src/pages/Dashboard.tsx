@@ -30,43 +30,14 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  AreaChart, 
-  Area,
-  ScatterChart, 
-  Scatter, 
-  ZAxis,
-  LineChart,
-  Line,
-  Treemap
+  ResponsiveContainer
 } from 'recharts';
-import { useToast } from '@/hooks/use-toast';
-import { FileDown, AlertTriangle, ArrowRight, Save } from 'lucide-react';
-
-// Enhanced color palette for charts
-const COLORS = [
-  '#8B5CF6', // Vivid Purple
-  '#D946EF', // Magenta Pink
-  '#F97316', // Bright Orange
-  '#0EA5E9', // Ocean Blue
-  '#10B981', // Emerald Green
-  '#F59E0B', // Amber
-  '#EC4899', // Pink
-  '#6366F1', // Indigo
-  '#14B8A6', // Teal
-  '#8B5CF6', // Violet
-  '#22C55E', // Green
-  '#EF4444', // Red
-  '#3B82F6', // Blue
-  '#06B6D4', // Cyan
-  '#A855F7', // Purple
-  '#DB2777', // Pink
-  '#EA580C', // Orange
-];
+import { useToast } from '@/components/ui/use-toast';
+import { FileDown, AlertTriangle, ArrowRight } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { state, formatCurrency, generateOptimization, saveAsProject, currentProjectId } = useEstimator();
+  const { state, formatCurrency, generateOptimization } = useEstimator();
   const { toast } = useToast();
 
   // Redirect if no breakdown data
@@ -92,6 +63,8 @@ const Dashboard = () => {
     { name: 'Overhead', value: state.breakdown.overhead.total },
   ];
 
+  const COLORS = ['#3b82f6', '#10b981', '#6366f1'];
+
   const materialsData = Object.entries(state.breakdown.materials.items)
     .filter(([_, value]) => value > 0)
     .map(([key, value]) => ({
@@ -113,48 +86,8 @@ const Dashboard = () => {
       value,
     }));
 
-  // Generate time-series cost data for area chart
-  const costProgressData = [
-    { name: 'Planning', materials: state.breakdown.materials.total * 0.15, labor: state.breakdown.labor.total * 0.05, overhead: state.breakdown.overhead.total * 0.25 },
-    { name: 'Foundation', materials: state.breakdown.materials.total * 0.25, labor: state.breakdown.labor.total * 0.15, overhead: state.breakdown.overhead.total * 0.15 },
-    { name: 'Structure', materials: state.breakdown.materials.total * 0.30, labor: state.breakdown.labor.total * 0.25, overhead: state.breakdown.overhead.total * 0.15 },
-    { name: 'Interior', materials: state.breakdown.materials.total * 0.20, labor: state.breakdown.labor.total * 0.30, overhead: state.breakdown.overhead.total * 0.20 },
-    { name: 'Finishing', materials: state.breakdown.materials.total * 0.10, labor: state.breakdown.labor.total * 0.25, overhead: state.breakdown.overhead.total * 0.25 }
-  ];
-
-  // Generate line chart data for cost trend analysis
-  const costTrendData = [
-    { month: 'Jan', materials: state.breakdown.materials.total * 0.05, labor: state.breakdown.labor.total * 0.03, overhead: state.breakdown.overhead.total * 0.02 },
-    { month: 'Feb', materials: state.breakdown.materials.total * 0.10, labor: state.breakdown.labor.total * 0.08, overhead: state.breakdown.overhead.total * 0.09 },
-    { month: 'Mar', materials: state.breakdown.materials.total * 0.18, labor: state.breakdown.labor.total * 0.15, overhead: state.breakdown.overhead.total * 0.15 },
-    { month: 'Apr', materials: state.breakdown.materials.total * 0.25, labor: state.breakdown.labor.total * 0.22, overhead: state.breakdown.overhead.total * 0.22 },
-    { month: 'May', materials: state.breakdown.materials.total * 0.35, labor: state.breakdown.labor.total * 0.30, overhead: state.breakdown.overhead.total * 0.28 },
-    { month: 'Jun', materials: state.breakdown.materials.total * 0.42, labor: state.breakdown.labor.total * 0.40, overhead: state.breakdown.overhead.total * 0.35 },
-  ];
-
-  // Generate scatter plot data for cost vs quality analysis
-  const scatterData = [
-    { category: 'Cement', cost: state.breakdown.materials.items.cement || 0, qualityIndex: 75, name: 'Cement' },
-    { category: 'Steel', cost: state.breakdown.materials.items.steel || 0, qualityIndex: 85, name: 'Steel' },
-    { category: 'Wood', cost: state.breakdown.materials.items.wood || 0, qualityIndex: 65, name: 'Wood' },
-    { category: 'Paint', cost: state.breakdown.materials.items.paint || 0, qualityIndex: 60, name: 'Paint' },
-    { category: 'Fixtures', cost: state.breakdown.materials.items.fixtures || 0, qualityIndex: 70, name: 'Fixtures' },
-    { category: 'Electrical', cost: state.breakdown.materials.items.electrical || 0, qualityIndex: 80, name: 'Electrical' },
-    { category: 'Plumbing', cost: state.breakdown.materials.items.plumbing || 0, qualityIndex: 78, name: 'Plumbing' },
-  ];
-
   const handleOptimize = () => {
     navigate('/optimize');
-  };
-
-  const handleSaveProject = async () => {
-    const projectId = await saveAsProject();
-    if (projectId) {
-      toast({
-        title: "Success",
-        description: "Project saved successfully",
-      });
-    }
   };
 
   return (
@@ -172,11 +105,6 @@ const Dashboard = () => {
             </div>
             
             <div className="flex gap-3">
-              {!currentProjectId && (
-                <Button onClick={handleSaveProject} variant="outline" className="gap-2">
-                  <Save className="h-4 w-4" /> Save as Project
-                </Button>
-              )}
               <Button onClick={handleOptimize} variant="outline" className="gap-2">
                 Cost Optimization <ArrowRight className="h-4 w-4" />
               </Button>
@@ -266,7 +194,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
-          {/* Cost Distribution Charts */}
+          {/* Cost Breakdown Charts */}
           <Card className="shadow-md mb-8">
             <CardHeader>
               <CardTitle>Cost Distribution</CardTitle>
@@ -317,159 +245,10 @@ const Dashboard = () => {
                       <YAxis />
                       <Tooltip formatter={(value) => formatCurrency(value as number)} />
                       <Legend />
-                      <Bar dataKey="value" name="Amount">
-                        {pieData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
+                      <Bar dataKey="value" name="Amount" fill="#3b82f6" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* New Visualization Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle>Project Timeline Cost Distribution</CardTitle>
-                <CardDescription>
-                  Cost distribution across project phases
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={costProgressData}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="materials" 
-                        stackId="1" 
-                        stroke={COLORS[0]} 
-                        fill={COLORS[0]} 
-                        name="Materials" 
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="labor" 
-                        stackId="1" 
-                        stroke={COLORS[1]} 
-                        fill={COLORS[1]} 
-                        name="Labor" 
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="overhead" 
-                        stackId="1" 
-                        stroke={COLORS[2]} 
-                        fill={COLORS[2]} 
-                        name="Overhead" 
-                      />
-                      <Legend />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle>Materials Quality vs Cost Analysis</CardTitle>
-                <CardDescription>
-                  Relationship between material quality and cost
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ScatterChart
-                      margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                    >
-                      <CartesianGrid />
-                      <XAxis 
-                        type="number" 
-                        dataKey="qualityIndex" 
-                        name="Quality Index" 
-                        unit="%" 
-                        domain={[50, 100]} 
-                      />
-                      <YAxis 
-                        type="number" 
-                        dataKey="cost" 
-                        name="Cost" 
-                      />
-                      <ZAxis type="number" range={[100, 500]} />
-                      <Tooltip 
-                        formatter={(value, name) => {
-                          if (name === 'Quality Index') return `${value}%`;
-                          return formatCurrency(value as number);
-                        }}
-                        labelFormatter={label => ''}
-                      />
-                      <Legend />
-                      <Scatter name="Materials" data={scatterData} fill="#8B5CF6">
-                        {scatterData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[(index * 2) % COLORS.length]} />
-                        ))}
-                      </Scatter>
-                    </ScatterChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <Card className="shadow-md mb-8">
-            <CardHeader>
-              <CardTitle>Monthly Cost Projection Trends</CardTitle>
-              <CardDescription>
-                Projected cost trends over the project timeline
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={costTrendData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="materials" 
-                      stroke={COLORS[3]} 
-                      strokeWidth={2} 
-                      name="Materials"
-                      activeDot={{ r: 8 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="labor" 
-                      stroke={COLORS[4]} 
-                      strokeWidth={2} 
-                      name="Labor" 
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="overhead" 
-                      stroke={COLORS[5]} 
-                      strokeWidth={2} 
-                      name="Overhead" 
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -541,11 +320,7 @@ const Dashboard = () => {
                           <XAxis type="number" />
                           <YAxis type="category" dataKey="name" width={120} />
                           <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                          <Bar dataKey="value" name="Cost">
-                            {materialsData.map((_, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[(index + 7) % COLORS.length]} />
-                            ))}
-                          </Bar>
+                          <Bar dataKey="value" name="Cost" fill="#3b82f6" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -603,11 +378,7 @@ const Dashboard = () => {
                           <XAxis type="number" />
                           <YAxis type="category" dataKey="name" width={120} />
                           <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                          <Bar dataKey="value" name="Cost">
-                            {laborData.map((_, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[(index + 10) % COLORS.length]} />
-                            ))}
-                          </Bar>
+                          <Bar dataKey="value" name="Cost" fill="#10b981" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -665,11 +436,7 @@ const Dashboard = () => {
                           <XAxis type="number" />
                           <YAxis type="category" dataKey="name" width={120} />
                           <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                          <Bar dataKey="value" name="Cost">
-                            {overheadData.map((_, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[(index + 13) % COLORS.length]} />
-                            ))}
-                          </Bar>
+                          <Bar dataKey="value" name="Cost" fill="#6366f1" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

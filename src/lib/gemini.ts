@@ -74,10 +74,10 @@ export const saveOptimizationsToDatabase = async (projectId: string, optimizatio
       title: opt.title,
       description: opt.description,
       category: opt.category,
-      potential_savings: opt.potentialSavings,
-      implementation_complexity: opt.implementationComplexity,
-      time_impact: opt.timeImpact,
-      quality_impact: opt.qualityImpact
+      potential_savings: opt.potential_savings,
+      implementation_complexity: opt.implementation_complexity,
+      time_impact: opt.time_impact,
+      quality_impact: opt.quality_impact
     }));
     
     const { error } = await supabase
@@ -91,12 +91,4 @@ export const saveOptimizationsToDatabase = async (projectId: string, optimizatio
     console.error('Error saving optimizations:', error);
     throw error;
   }
-};
-
-// Calculate safe optimized total to ensure it never goes negative
-export const calculateSafeOptimizedTotal = (originalTotal: number, potentialSavings: number): number => {
-  // Ensure savings cannot exceed 75% of the original cost
-  const maxAllowedSavings = originalTotal * 0.75;
-  const safeSavings = Math.min(potentialSavings, maxAllowedSavings);
-  return Math.max(originalTotal - safeSavings, originalTotal * 0.25);
 };

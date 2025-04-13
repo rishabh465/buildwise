@@ -73,6 +73,9 @@ const Footer = () => {
         
         <div className="mt-8 pt-6 border-t text-center sm:flex sm:justify-between sm:text-left text-sm text-muted-foreground">
           <p>© {currentYear} BuildWise. All rights reserved.</p>
+          <p className="mt-2 sm:mt-0">
+            Made with <span className="text-red-500">❤</span> for construction professionals
+          </p>
         </div>
       </div>
     </footer>
